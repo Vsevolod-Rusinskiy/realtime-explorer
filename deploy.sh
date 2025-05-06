@@ -12,7 +12,7 @@ nvm use 20.9.0
 cd /var/www/realtime-explorer/
 
 # 3. Обновление кода
-git pull origin master
+git pull origin main
 
 # 4. Docker Compose: билд и запуск
 # (убедись, что docker-compose.yml настроен на порты 3003 и 5433)
