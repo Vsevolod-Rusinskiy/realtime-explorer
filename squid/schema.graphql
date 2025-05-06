@@ -37,6 +37,7 @@ type Account @entity {
   id: ID!
   balance: BigInt
   updatedAt: DateTime
+  testColumn: String
   transactionsFrom: [Transaction!] @derivedFrom(field: "from")
   transactionsTo: [Transaction!] @derivedFrom(field: "to")
 }
