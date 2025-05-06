@@ -1,17 +1,52 @@
-type Account @entity {
-  "Account address"
-  id: ID!
-  transfersTo: [Transfer!] @derivedFrom(field: "to")
-  transfersFrom: [Transfer!] @derivedFrom(field: "from")
+type Block @entity {
+  id: ID! # hash блока
+  number: BigInt!
+  hash: String!
+  timestamp: DateTime!
+  validator: String
+  status: String
+  size: Int
+  transactions: [Transaction!] @derivedFrom(field: "block")
+  events: [Event!] @derivedFrom(field: "block")
 }
 
-type Transfer @entity {
+type Transaction @entity {
   id: ID!
-  blockNumber: Int! @index
-  timestamp: DateTime! @index
-  extrinsicHash: String @index
-  from: Account!
-  to: Account!
-  amount: BigInt! @index
-  fee: BigInt! # fee is calculated at the best effort and may be zero for some old extrinsics
+  block: Block!
+  timestamp: DateTime!
+  from: Account
+  to: Account
+  amount: BigInt
+  fee: BigInt
+  status: String
+  type: String
+  data: String
+  events: [Event!] @derivedFrom(field: "transaction")
+}
+
+type Event @entity {
+  id: ID! # block_hash-event_index
+  block: Block!
+  transaction: Transaction
+  section: String
+  method: String
+  data: String
+}
+
+type Account @entity {
+  id: ID!
+  balance: BigInt
+  updatedAt: DateTime
+  transactionsFrom: [Transaction!] @derivedFrom(field: "from")
+  transactionsTo: [Transaction!] @derivedFrom(field: "to")
+}
+
+type Statistics @entity {
+  id: ID!
+  totalBlocks: Int
+  totalTransactions: Int
+  totalAccounts: Int
+  averageBlockTime: Float
+  lastBlock: Int
+  updatedAt: DateTime
 }

@@ -1,21 +1,24 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, OneToMany as OneToMany_} from "typeorm"
-import {Transfer} from "./transfer.model"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, BigIntColumn as BigIntColumn_, DateTimeColumn as DateTimeColumn_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
+import {Transaction} from "./transaction.model"
 
 @Entity_()
 export class Account {
-  constructor(props?: Partial<Account>) {
-    Object.assign(this, props)
-  }
+    constructor(props?: Partial<Account>) {
+        Object.assign(this, props)
+    }
 
-  /**
-   * Account address
-   */
-  @PrimaryColumn_()
-  id!: string
+    @PrimaryColumn_()
+    id!: string
 
-  @OneToMany_(() => Transfer, e => e.to)
-  transfersTo!: Transfer[]
+    @BigIntColumn_({nullable: true})
+    balance!: bigint | undefined | null
 
-  @OneToMany_(() => Transfer, e => e.from)
-  transfersFrom!: Transfer[]
+    @DateTimeColumn_({nullable: true})
+    updatedAt!: Date | undefined | null
+
+    @OneToMany_(() => Transaction, e => e.from)
+    transactionsFrom!: Transaction[]
+
+    @OneToMany_(() => Transaction, e => e.to)
+    transactionsTo!: Transaction[]
 }

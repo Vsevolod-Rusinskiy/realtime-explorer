@@ -3,113 +3,57 @@ import {In} from 'typeorm'
 import * as ss58 from '@subsquid/ss58'
 import assert from 'assert'
 
-import {processor, ProcessorContext} from './processor'
-import {Account, Transfer} from './model'
+import {createProcessor, ProcessorContext} from './processor'
+import {Account} from './model'
 import {events} from './types'
 
-processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
-    let transferEvents: TransferEvent[] = getTransferEvents(ctx)
-
-    let accounts: Map<string, Account> = await createAccounts(ctx, transferEvents)
-    let transfers: Transfer[] = createTransfers(transferEvents, accounts)
-
-    await ctx.store.upsert([...accounts.values()])
-    await ctx.store.insert(transfers)
-})
-
-interface TransferEvent {
-    id: string
-    blockNumber: number
-    timestamp: Date
-    extrinsicHash?: string
-    from: string
-    to: string
-    amount: bigint
-    fee?: bigint
-}
-
-function getTransferEvents(ctx: ProcessorContext<Store>): TransferEvent[] {
-    // Filters and decodes the arriving events
-    let transfers: TransferEvent[] = []
-    for (let block of ctx.blocks) {
-        for (let event of block.events) {
-            if (event.name == events.balances.transfer.name) {
-                let rec: {from: string; to: string; amount: bigint}
-                if (events.balances.transfer.v1020.is(event)) {
-                    let [from, to, amount] = events.balances.transfer.v1020.decode(event)
-                    rec = {from, to, amount}
-                }
-                else if (events.balances.transfer.v1050.is(event)) {
-                    let [from, to, amount] = events.balances.transfer.v1050.decode(event)
-                    rec = {from, to, amount}
-                }
-                else if (events.balances.transfer.v9130.is(event)) {
-                    rec = events.balances.transfer.v9130.decode(event)
-                }
-                else {
-                    throw new Error('Unsupported spec')
-                }
-
-                assert(block.header.timestamp, `Got an undefined timestamp at block ${block.header.height}`)
-
-                transfers.push({
-                    id: event.id,
-                    blockNumber: block.header.height,
-                    timestamp: new Date(block.header.timestamp),
-                    extrinsicHash: event.extrinsic?.hash,
-                    from: ss58.codec('kusama').encode(rec.from),
-                    to: ss58.codec('kusama').encode(rec.to),
-                    amount: rec.amount,
-                    fee: event.extrinsic?.fee || 0n,
-                })
+async function main() {
+  const processor = await createProcessor()
+  processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
+    const accounts = new Map<string, Account>()
+    let totalTransfers = 0
+    for (const block of ctx.blocks) {
+      console.log(`Блок #${block.header.height}, hash: ${block.header.hash}`)
+      for (const event of block.events) {
+        console.log(`  Событие: ${event.name}`)
+        if (event.name === 'Balances.Transfer') {
+          try {
+            const args = event.args
+            const from = args.from?.toString() || ''
+            const to = args.to?.toString() || ''
+            const amount = args.amount ? BigInt(args.amount.toString()) : 0n
+            console.log(`    Перевод: ${from} -> ${to}, сумма: ${amount}`)
+            // Создаём/обновляем аккаунты
+            if (from && !accounts.has(from)) {
+              accounts.set(from, new Account({id: from, balance: 0n, updatedAt: new Date()}))
             }
+            if (to && !accounts.has(to)) {
+              accounts.set(to, new Account({id: to, balance: 0n, updatedAt: new Date()}))
+            }
+            totalTransfers++
+          } catch (e) {
+            console.error('Ошибка при обработке Balances.Transfer:', e)
+          }
         }
-    }
-    return transfers
-}
-
-async function createAccounts(ctx: ProcessorContext<Store>, transferEvents: TransferEvent[]): Promise<Map<string,Account>> {
-    const accountIds = new Set<string>()
-    for (let t of transferEvents) {
-        accountIds.add(t.from)
-        accountIds.add(t.to)
-    }
-
-    const accounts = await ctx.store.findBy(Account, {id: In([...accountIds])}).then((accounts) => {
-        return new Map(accounts.map((a) => [a.id, a]))
-    })
-
-    for (let t of transferEvents) {
-        updateAccounts(t.from)
-        updateAccounts(t.to)
-    }
-
-    function updateAccounts(id: string): void {
-        const acc = accounts.get(id)
-        if (acc == null) {
-            accounts.set(id, new Account({id}))
+        if (event.name.startsWith('Balances.')) {
+          console.log(`    Балансовое событие: ${event.name}, args:`, event.args)
         }
+        if (event.name.startsWith('System.')) {
+          console.log(`    Системное событие: ${event.name}, args:`, event.args)
+        }
+      }
     }
-
-    return accounts
+    // Сохраняем аккаунты
+    if (accounts.size > 0) {
+      await ctx.store.upsert([...accounts.values()])
+      console.log(`Сохранено аккаунтов: ${accounts.size}`)
+    }
+    // Пример простой статистики
+    console.log(`Батч обработан: блоков: ${ctx.blocks.length}, транзакций: ${totalTransfers}`)
+  })
 }
 
-function createTransfers(transferEvents: TransferEvent[], accounts: Map<string, Account>): Transfer[] {
-    let transfers: Transfer[] = []
-    for (let t of transferEvents) {
-        let {id, blockNumber, timestamp, extrinsicHash, amount, fee} = t
-        let from = accounts.get(t.from)
-        let to = accounts.get(t.to)
-        transfers.push(new Transfer({
-            id,
-            blockNumber,
-            timestamp,
-            extrinsicHash,
-            from,
-            to,
-            amount,
-            fee,
-        }))
-    }
-    return transfers
-}
+main().catch(e => {
+  console.error(e)
+  process.exit(1)
+})

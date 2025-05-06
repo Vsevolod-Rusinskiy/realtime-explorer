@@ -1,48 +1,68 @@
-import {assertNotNull} from '@subsquid/util-internal'
+import { ApiPromise, WsProvider } from '@polkadot/api'
 import {
-    BlockHeader,
-    DataHandlerContext,
-    SubstrateBatchProcessor,
-    SubstrateBatchProcessorFields,
-    Event as _Event,
-    Call as _Call,
-    Extrinsic as _Extrinsic
+  SubstrateBatchProcessor,
+  SubstrateBatchProcessorFields,
+  BlockHeader,
+  DataHandlerContext,
+  Event as _Event,
+  Call as _Call,
+  Extrinsic as _Extrinsic
 } from '@subsquid/substrate-processor'
 
-import {events} from './types'
+const rpcUrl = 'wss://test.qfnetwork.xyz/wss'
+const depth = 50 // только real-time и "хвост" новых блоков
 
-export const processor = new SubstrateBatchProcessor()
-    // Lookup archive by the network name in Subsquid registry
-    // See https://docs.subsquid.io/substrate-indexing/supported-networks/
-    .setGateway('https://v2.archive.subsquid.io/network/kusama')
-    // Chain RPC endpoint is required on Substrate for metadata and real-time updates
+export async function createProcessor() {
+  const provider = new WsProvider(rpcUrl)
+  const api = await ApiPromise.create({ provider })
+  const lastHeader = await api.rpc.chain.getHeader()
+  const lastBlock = lastHeader.number.toNumber()
+  await api.disconnect()
+  const startBlock = Math.max(0, lastBlock - depth)
+
+  return new SubstrateBatchProcessor()
     .setRpcEndpoint({
-        // Set via .env for local runs or via secrets when deploying to Subsquid Cloud
-        // https://docs.subsquid.io/deploy-squid/env-variables/
-        url: assertNotNull(process.env.RPC_KUSAMA_HTTP, 'No RPC endpoint supplied'),
-        // More RPC connection options at https://docs.subsquid.io/substrate-indexing/setup/general/#set-data-source
-        rateLimit: 10
+      url: rpcUrl,
+      rateLimit: 10
     })
+    .setBlockRange({ from: startBlock })
     .addEvent({
-        name: [events.balances.transfer.name],
-        extrinsic: true
+      name: [
+        'Balances.Transfer',
+        'Balances.Withdraw',
+        'Balances.Deposit',
+        'System.ExtrinsicSuccess',
+        'System.ExtrinsicFailed'
+      ],
+      extrinsic: true
     })
     .setFields({
-        event: {
-            args: true
-        },
-        extrinsic: {
-            hash: true,
-            fee: true
-        },
-        block: {
-            timestamp: true
-        }
+      block: {
+        timestamp: true,
+        specVersion: true,
+        validator: true
+      },
+      event: {
+        args: true,
+        indexInBlock: true,
+        phase: true
+      },
+      call: {
+        args: true,
+        error: true,
+        success: true
+      },
+      extrinsic: {
+        hash: true,
+        fee: true,
+        tip: true,
+        success: true,
+        error: true
+      }
     })
-    // Uncomment to disable RPC ingestion and drastically reduce no of RPC calls
-    //.useArchiveOnly()
+}
 
-export type Fields = SubstrateBatchProcessorFields<typeof processor>
+export type Fields = SubstrateBatchProcessorFields<ReturnType<typeof createProcessor>>
 export type Block = BlockHeader<Fields>
 export type Event = _Event<Fields>
 export type Call = _Call<Fields>

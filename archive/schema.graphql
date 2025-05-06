@@ -1,0 +1,71 @@
+type Account @entity {
+  "Account address"
+  id: ID!
+  "Баланс аккаунта"
+  balance: BigInt
+  "Транзакции, отправленные с этого аккаунта"
+  transactionsFrom: [Transaction!] @derivedFrom(field: "from")
+  "Транзакции, полученные этим аккаунтом"
+  transactionsTo: [Transaction!] @derivedFrom(field: "to")
+  "Временная метка последнего обновления"
+  updatedAt: DateTime!
+}
+
+type Block @entity {
+  "Номер блока"
+  id: ID!
+  "Хеш блока"
+  hash: String! @index
+  "Временная метка создания блока"
+  timestamp: DateTime! @index
+  "Валидатор, создавший блок"
+  validator: String
+  "Статус блока (в процессе, финализирован и т.д.)"
+  status: String
+  "Размер блока в байтах"
+  size: Int
+  "Транзакции в этом блоке"
+  transactions: [Transaction!] @derivedFrom(field: "block")
+}
+
+type Transaction @entity {
+  "Хеш транзакции"
+  id: ID!
+  "Блок, в котором находится транзакция"
+  block: Block!
+  "Номер блока для удобства запросов"
+  blockNumber: Int! @index
+  "Временная метка создания транзакции"
+  timestamp: DateTime! @index
+  "Аккаунт отправителя"
+  from: Account!
+  "Аккаунт получателя (может быть null для некоторых типов транзакций)"
+  to: Account
+  "Сумма передачи"
+  amount: BigInt @index
+  "Комиссия за транзакцию"
+  fee: BigInt
+  "Статус транзакции (в очереди, выполнена, отменена и т.д.)"
+  status: String! @index
+  "Тип транзакции (перевод, вызов контракта и т.д.)"
+  type: String
+  "Данные транзакции в формате JSON"
+  data: String
+}
+
+type Statistics @entity {
+  "Уникальный идентификатор статистики (всегда 'current')"
+  id: ID!
+  "Общее количество блоков"
+  totalBlocks: Int!
+  "Общее количество транзакций"
+  totalTransactions: Int!
+  "Общее количество аккаунтов"
+  totalAccounts: Int!
+  "Среднее время между блоками (миллисекунды)"
+  averageBlockTime: Float!
+  "Последний обработанный блок"
+  lastBlock: Int!
+  "Временная метка последнего обновления"
+  updatedAt: DateTime!
+}
