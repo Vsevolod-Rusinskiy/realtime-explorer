@@ -11,6 +11,18 @@ services:
       # command: ["postgres", "-c", "log_statement=all"]
 #    volumes:
 #      - ./data/db:/var/lib/postgresql/data
+  squid:
+    build: ./squid
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: squid
+      DB_USER: postgres
+      DB_PASS: postgres
+    working_dir: /app
+    command: ["sleep", "infinity"] # для ручного запуска миграций и теста
 
 #  hasura:
 #    image: hasura/graphql-engine:latest
