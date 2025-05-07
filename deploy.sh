@@ -13,7 +13,7 @@ cd /var/www/realtime-explorer/
 echo "PWD: $(pwd)"
 ls -l .env docker-compose.yml
 
-# 3. Обновление кода.
+# 3. Обновление кода
 git pull origin main
 
 # 4. Docker Compose: билд и запуск
