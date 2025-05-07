@@ -19,9 +19,12 @@ git pull origin main
 docker-compose pull
 docker-compose build
 
-# 5. Применение миграций (пример для squid)
-echo "Running migrations..."
-docker-compose run --rm squid npx squid-typeorm-migration apply
+# 5. Переходим в папку squid и выполняем codegen, build и миграции
+cd squid
+npx squid-typeorm-codegen
+npm run build
+npx squid-typeorm-migration apply
+cd ..
 
 # 6. Запуск всех сервисов
 docker-compose up -d
