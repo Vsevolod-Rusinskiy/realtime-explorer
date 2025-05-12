@@ -44,10 +44,14 @@ type Account @entity {
 
 type Statistics @entity {
   id: ID!
-  totalBlocks: Int
-  totalTransactions: Int
-  totalAccounts: Int
+  totalBlocks: BigInt
+  totalTransactions: BigInt
+  totalAccounts: BigInt
+  totalExtrinsics: BigInt
+  totalEvents: BigInt
+  totalTransfers: BigInt
+  totalWithdraws: BigInt
   averageBlockTime: Float
   lastBlock: Int
-  updatedAt: DateTime
+  lastUpdated: DateTime
 }

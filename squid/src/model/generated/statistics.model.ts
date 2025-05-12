@@ -1,4 +1,4 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, IntColumn as IntColumn_, FloatColumn as FloatColumn_, DateTimeColumn as DateTimeColumn_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, BigIntColumn as BigIntColumn_, FloatColumn as FloatColumn_, IntColumn as IntColumn_, DateTimeColumn as DateTimeColumn_} from "@subsquid/typeorm-store"
 
 @Entity_()
 export class Statistics {
@@ -9,14 +9,26 @@ export class Statistics {
     @PrimaryColumn_()
     id!: string
 
-    @IntColumn_({nullable: true})
-    totalBlocks!: number | undefined | null
+    @BigIntColumn_({nullable: true})
+    totalBlocks!: bigint | undefined | null
 
-    @IntColumn_({nullable: true})
-    totalTransactions!: number | undefined | null
+    @BigIntColumn_({nullable: true})
+    totalTransactions!: bigint | undefined | null
 
-    @IntColumn_({nullable: true})
-    totalAccounts!: number | undefined | null
+    @BigIntColumn_({nullable: true})
+    totalAccounts!: bigint | undefined | null
+
+    @BigIntColumn_({nullable: true})
+    totalExtrinsics!: bigint | undefined | null
+
+    @BigIntColumn_({nullable: true})
+    totalEvents!: bigint | undefined | null
+
+    @BigIntColumn_({nullable: true})
+    totalTransfers!: bigint | undefined | null
+
+    @BigIntColumn_({nullable: true})
+    totalWithdraws!: bigint | undefined | null
 
     @FloatColumn_({nullable: true})
     averageBlockTime!: number | undefined | null
@@ -25,5 +37,5 @@ export class Statistics {
     lastBlock!: number | undefined | null
 
     @DateTimeColumn_({nullable: true})
-    updatedAt!: Date | undefined | null
+    lastUpdated!: Date | undefined | null
 }

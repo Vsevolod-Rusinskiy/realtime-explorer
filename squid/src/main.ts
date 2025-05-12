@@ -16,8 +16,29 @@ async function main() {
     const transactions = new Map<string, Transaction>()
     const eventsMap = new Map<string, Event>()
     
+    // Статистика
     let totalTransfers = 0
     let totalEvents = 0
+    let totalWithdraws = 0
+    let totalExtrinsics = 0
+    
+    // Получаем текущую статистику из БД
+    let stats = await ctx.store.findOne(Statistics, { where: { id: '1' } })
+    
+    if (!stats) {
+      // Если статистики нет, создаем новую
+      stats = new Statistics({
+        id: '1',
+        totalBlocks: 0n,
+        totalExtrinsics: 0n,
+        totalEvents: 0n,
+        totalTransfers: 0n,
+        totalWithdraws: 0n,
+        totalTransactions: 0n,
+        totalAccounts: 0n,
+        lastUpdated: new Date()
+      })
+    }
     
     for (const block of ctx.blocks) {
       console.log(`Блок #${block.header.height}, hash: ${block.header.hash}`)
@@ -68,6 +89,7 @@ async function main() {
             })
             
             transactions.set(txId, tx)
+            totalExtrinsics++
           } catch (e) {
             console.error('Ошибка при обработке экзинтриксика:', e)
           }
@@ -133,6 +155,29 @@ async function main() {
         else if (event.name.startsWith('Balances.') && event.name !== 'Balances.Transfer') {
           console.log(`    Балансовое событие: ${event.name}, args:`, event.args)
           
+          // Если это Balances.Withdraw, добавляем аккаунт
+          if (event.name === 'Balances.Withdraw') {
+            try {
+              const args = event.args
+              const who = args.who?.toString() || ''
+              const amount = args.amount ? BigInt(args.amount.toString()) : 0n
+              
+              // Создаем аккаунт, если еще не существует
+              if (who && !accounts.has(who)) {
+                console.log(`    Добавляем аккаунт: ${who} из события Withdraw`)
+                accounts.set(who, new Account({
+                  id: who,
+                  balance: 0n, // Баланс нам неизвестен
+                  updatedAt: new Date(block.header.timestamp || 0)
+                }))
+              }
+              
+              totalWithdraws++
+            } catch (e) {
+              console.error('Ошибка при обработке Balances.Withdraw:', e)
+            }
+          }
+          
           // Создаем событие для других балансовых операций
           const eventId = `${block.header.hash}-event-${event.index}`
           const eventEntity = new Event({
@@ -196,6 +241,27 @@ async function main() {
       await ctx.store.upsert([...accounts.values()])
       console.log(`Сохранено аккаунтов: ${accounts.size}`)
     }
+    
+    // Обновляем статистику
+    stats.totalBlocks = BigInt(await ctx.store.count(Block))
+    stats.totalTransactions = (stats.totalTransactions || 0n) + BigInt(transactions.size)
+    stats.totalExtrinsics = (stats.totalExtrinsics || 0n) + BigInt(totalExtrinsics)
+    stats.totalEvents = (stats.totalEvents || 0n) + BigInt(totalEvents)
+    stats.totalTransfers = (stats.totalTransfers || 0n) + BigInt(totalTransfers)
+    stats.totalWithdraws = (stats.totalWithdraws || 0n) + BigInt(totalWithdraws)
+    stats.totalAccounts = BigInt(await ctx.store.count(Account))
+    stats.lastUpdated = new Date()
+    
+    await ctx.store.upsert(stats)
+    console.log('Обновлена статистика:', {
+      totalBlocks: stats.totalBlocks?.toString(),
+      totalTransactions: stats.totalTransactions?.toString(),
+      totalExtrinsics: stats.totalExtrinsics?.toString(),
+      totalEvents: stats.totalEvents?.toString(),
+      totalTransfers: stats.totalTransfers?.toString(),
+      totalWithdraws: stats.totalWithdraws?.toString(),
+      totalAccounts: stats.totalAccounts?.toString()
+    })
     
     console.log(`Батч обработан: блоков: ${ctx.blocks.length}, транзакций: ${transactions.size}, событий: ${eventsMap.size}, аккаунтов: ${accounts.size}`)
     
