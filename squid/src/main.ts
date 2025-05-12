@@ -17,6 +17,7 @@ async function main() {
     const eventsMap = new Map<string, Event>()
     
     let totalTransfers = 0
+    let totalEvents = 0
     
     for (const block of ctx.blocks) {
       console.log(`Блок #${block.header.height}, hash: ${block.header.hash}`)
@@ -34,9 +35,49 @@ async function main() {
       
       blocks.set(block.header.hash, blockEntity)
       
+      // Добавляем аккаунт валидатора
+      if (block.header.validator && !accounts.has(block.header.validator)) {
+        accounts.set(block.header.validator, new Account({
+          id: block.header.validator,
+          balance: 0n,
+          updatedAt: new Date(block.header.timestamp || 0)
+        }))
+      }
+      
+      for (const extrinsic of block.extrinsics) {
+        // Добавляем экзинтриксики как транзакции
+        if (extrinsic.success) {
+          try {
+            // Используем безопасный доступ к данным с проверкой типов
+            const txId = `${block.header.hash}-extrinsic-${extrinsic.index}`
+            
+            const tx = new Transaction({
+              id: txId,
+              block: blockEntity,
+              timestamp: new Date(block.header.timestamp || 0),
+              from: undefined, // Мы не можем надежно получить отправителя, уберем это поле
+              to: undefined,
+              amount: 0n,
+              fee: extrinsic.fee ? BigInt(extrinsic.fee.toString()) : 0n,
+              status: 'success',
+              type: 'extrinsic',
+              data: JSON.stringify({
+                hash: extrinsic.hash,
+                index: extrinsic.index
+              })
+            })
+            
+            transactions.set(txId, tx)
+          } catch (e) {
+            console.error('Ошибка при обработке экзинтриксика:', e)
+          }
+        }
+      }
+      
       for (const event of block.events) {
         console.log(`  Событие: ${event.name}`)
         
+        // Обработка Balances.Transfer (как было раньше)
         if (event.name === 'Balances.Transfer') {
           try {
             const args = event.args
@@ -88,8 +129,8 @@ async function main() {
             console.error('Ошибка при обработке Balances.Transfer:', e)
           }
         }
-        
-        if (event.name.startsWith('Balances.') && event.name !== 'Balances.Transfer') {
+        // Обработка других событий Balances (как было раньше)
+        else if (event.name.startsWith('Balances.') && event.name !== 'Balances.Transfer') {
           console.log(`    Балансовое событие: ${event.name}, args:`, event.args)
           
           // Создаем событие для других балансовых операций
@@ -103,6 +144,31 @@ async function main() {
           })
           
           eventsMap.set(eventId, eventEntity)
+        }
+        // NEW: Обработка System.ExtrinsicSuccess и других событий
+        else {
+          const [section, method] = event.name.split('.')
+          
+          // Получаем связанную транзакцию если это событие для экзинтриксика
+          let transaction = undefined
+          if (event.extrinsic) {
+            const txId = `${block.header.hash}-extrinsic-${event.extrinsic.index}`
+            transaction = transactions.get(txId)
+          }
+          
+          // Создаем событие
+          const eventId = `${block.header.hash}-event-${event.index}`
+          const eventEntity = new Event({
+            id: eventId,
+            block: blockEntity,
+            transaction: transaction,
+            section: section,
+            method: method,
+            data: JSON.stringify(event.args || {})
+          })
+          
+          eventsMap.set(eventId, eventEntity)
+          totalEvents++
         }
       }
     }
@@ -131,7 +197,7 @@ async function main() {
       console.log(`Сохранено аккаунтов: ${accounts.size}`)
     }
     
-    console.log(`Батч обработан: блоков: ${ctx.blocks.length}, транзакций: ${totalTransfers}`)
+    console.log(`Батч обработан: блоков: ${ctx.blocks.length}, транзакций: ${transactions.size}, событий: ${eventsMap.size}, аккаунтов: ${accounts.size}`)
     
     // Очищаем старые блоки
     try {
