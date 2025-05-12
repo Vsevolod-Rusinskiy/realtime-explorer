@@ -9,20 +9,25 @@ import {
   Extrinsic as _Extrinsic
 } from '@subsquid/substrate-processor'
 
-const rpcUrl = 'wss://test.qfnetwork.xyz/wss'
-const depth = 50 // только real-time и "хвост" новых блоков
+import { RPC_URL, DEPTH } from './config'
+import { DB_CONFIG } from './db-config'
+
+// Выводим информацию о настройках подключения к БД
+console.log('Используем настройки подключения к базе данных:')
+console.log(`- Host: ${DB_CONFIG.host}:${DB_CONFIG.port}`)
+console.log(`- Database: ${DB_CONFIG.database}`)
 
 export async function createProcessor() {
-  const provider = new WsProvider(rpcUrl)
+  const provider = new WsProvider(RPC_URL)
   const api = await ApiPromise.create({ provider })
   const lastHeader = await api.rpc.chain.getHeader()
   const lastBlock = lastHeader.number.toNumber()
   await api.disconnect()
-  const startBlock = Math.max(0, lastBlock - depth)
+  const startBlock = Math.max(0, lastBlock - DEPTH)
 
   return new SubstrateBatchProcessor()
     .setRpcEndpoint({
-      url: rpcUrl,
+      url: RPC_URL,
       rateLimit: 10
     })
     .setBlockRange({ from: startBlock })

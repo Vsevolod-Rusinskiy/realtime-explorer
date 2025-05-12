@@ -24,18 +24,11 @@ set +a
 docker-compose pull
 docker-compose build
 
-# 5. Переходим в папку squid и выполняем codegen, build и миграции
-cd squid
-npx squid-typeorm-codegen
-npm run build
-npx squid-typeorm-migration apply
-cd ..
-
-# 6. Запуск всех сервисов
+# 5. Запуск всех сервисов (squid запустится автоматически внутри контейнера)
 docker-compose up -d
 
-# 7. Проверка статуса
+# 6. Проверка статуса
 docker-compose ps
-docker-compose logs --tail=50
+docker-compose logs --tail=50 squid
 
 echo "Deploy complete." 

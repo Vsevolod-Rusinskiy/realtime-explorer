@@ -5,7 +5,11 @@
     "node": ">=16"
   },
   "scripts": {
-    "build": "rm -rf lib && tsc"
+    "build": "rm -rf lib && tsc",
+    "process": "node lib/main.js",
+    "migration:apply": "squid-typeorm-migration apply",
+    "start": "npm run build && npm run migration:apply && npm run process",
+    "processor:start": "node lib/main.js"
   },
   "dependencies": {
     "@polkadot/api": "^15.9.2",
