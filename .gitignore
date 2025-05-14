@@ -1,3 +1,4 @@
 # ... существующие правила ...
 archive/deploy.sh 
 **/.env 
+docker-compose.yml
