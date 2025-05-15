@@ -33,14 +33,16 @@ export async function createProcessor() {
     .setBlockRange({ from: startBlock })
     .addEvent({
       name: [
-        'Balances.Transfer',
         'Balances.Withdraw',
         'Balances.Deposit',
         'System.ExtrinsicSuccess',
         'System.ExtrinsicFailed',
-        'session.NewSession',
-        'staking.StakersElected',
-        'staking.PagedElectionProceeded'
+        'balances.Transfer',
+        'balances.Issued',
+        'staking.EraPaid',
+        'staking.Withdrawn',
+        'staking.Bonded',
+        'staking.Unbonded'
       ],
       extrinsic: true
     })
