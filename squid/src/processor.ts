@@ -37,7 +37,10 @@ export async function createProcessor() {
         'Balances.Withdraw',
         'Balances.Deposit',
         'System.ExtrinsicSuccess',
-        'System.ExtrinsicFailed'
+        'System.ExtrinsicFailed',
+        'session.NewSession',
+        'staking.StakersElected',
+        'staking.PagedElectionProceeded'
       ],
       extrinsic: true
     })
