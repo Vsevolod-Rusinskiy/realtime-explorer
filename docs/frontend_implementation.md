@@ -20,29 +20,25 @@
 ```
 /frontend
   /src
-    /app         # Next.js app router (роутинг, layout, подключение страниц через именованные экспорты)
-    /pages       # FSD-страницы (feature-sliced), только именованные экспорты
+    /app         # Next.js app router (роутинг, layout, страницы)
     /widgets     # Композиционные блоки и бизнес-логика
     /features    # Фичи, пользовательские сценарии
     /entities    # Бизнес-сущности (блок, транзакция, аккаунт, событие)
     /shared      # Общие компоненты, api, ui, lib, types
 ```
 
-- В папке `/src/app` — только роутинг и layout Next.js, подключение страниц через именованные экспорты из `/src/pages`
-- В папке `/src/pages` — FSD-страницы, только именованные экспорты (дефолтные не используем)
-- Вся логика, UI и бизнес-структура — в FSD-слоях
+- В папке `/src/app` — роутинг, layout и страницы Next.js (app router)
+- Вся логика, UI и бизнес-структура — в FSD-слоях (`widgets`, `features`, `entities`, `shared`)
+- Слой `pages` отсутствует, страницы реализуются только в `/src/app`
 
-### Пример экспорта/импорта страницы
+### Пример экспорта страницы
 
 ```typescript
-// src/pages/dashboard/index.ts
-export { DashboardPage } from './ui/dashboard-page'
-
 // src/app/dashboard/page.tsx
-import { DashboardPage } from '@/pages/dashboard'
+import { DashboardWidget } from '@/widgets/dashboard'
 
-export default function Page() {
-  return <DashboardPage />
+export default function DashboardPage() {
+  return <DashboardWidget />
 }
 ```
 
@@ -76,25 +72,29 @@ export default function Page() {
 +-------------------+
 ```
 
-## 4. Пример именованного экспорта страницы по FSD
+## 4. Пример страницы по FSD (теперь только в app)
 
 ```typescript
-// src/pages/dashboard/index.ts
-export { DashboardPage } from './ui/dashboard-page'
+// src/app/blocks/page.tsx
+import { BlocksWidget } from '@/widgets/blocks'
+
+export default function BlocksPage() {
+  return <BlocksWidget />
+}
 ```
 
 ## 5. Основные принципы
 - FSD-структура для масштабируемости
 - Только именованные экспорты
-- Вся логика и UI — в FSD-слоях, в app только роутинг и layout
+- Вся логика и UI — в FSD-слоях, в app только роутинг, layout и страницы
 - SSR и real-time через Apollo/Hasura
 - Tailwind CSS для стилей
 
 ## 6. План реализации
 1. Инициализация Next.js проекта (app router)
-2. Создание структуры FSD с двумя папками pages (app и FSD/pages)
+2. Создание структуры FSD (app + FSD-слои)
 3. Настройка Apollo Client и Tailwind CSS
-4. Реализация базовых страниц и виджетов через именованные экспорты
+4. Реализация базовых страниц и виджетов через app router
 5. Интеграция с Hasura GraphQL (queries, subscriptions)
 6. Реализация real-time обновлений
 7. Оптимизация и тесты
@@ -112,9 +112,9 @@ export { DashboardPage } from './ui/dashboard-page'
 
 ## 2. Реализация фронтенда (FSD + Next.js)
 - ⏳ Инициализация Next.js проекта (app router)
-- ⏳ Создание структуры FSD с двумя папками pages (app и FSD/pages)
+- ⏳ Создание структуры FSD (app + FSD-слои)
 - ⏳ Настройка Apollo Client и Tailwind CSS
-- ⏳ Реализация базовых страниц и виджетов через именованные экспорты
+- ⏳ Реализация базовых страниц и виджетов через app router
 - ⏳ Интеграция с Hasura GraphQL (queries, subscriptions)
 - ⏳ Реализация real-time обновлений
 - ⏳ Оптимизация и тесты 
