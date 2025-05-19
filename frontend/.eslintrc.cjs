@@ -1,6 +1,3 @@
-
-
-
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -66,4 +63,4 @@ module.exports = {
     "@typescript-eslint/ban-types": 1,
     "@typescript-eslint/no-inferrable-types": 1,
   },
-} 
+}
