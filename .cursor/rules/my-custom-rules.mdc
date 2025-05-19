@@ -7,5 +7,6 @@ alwaysApply: true
 
 [plan_realtime_explorer.md](mdc:docs/plan_realtime_explorer.md)
 [squid_implementation.md](mdc:docs/squid_implementation.md)
+[frontend_implementation.md](mdc:docs/frontend_implementation.md)
 
 если есть расхождения между тем что мы делаем и планом - сразу говори мне

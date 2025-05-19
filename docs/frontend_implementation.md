@@ -99,4 +99,22 @@ export { DashboardPage } from './ui/dashboard-page'
 6. Реализация real-time обновлений
 7. Оптимизация и тесты
 
-## 7. Документ будет дополняться по мере разработки 
+## 7. Документ будет дополняться по мере разработки
+
+# План реализации фронтенда (Next.js + Hasura + Apollo)
+
+## 1. Интеграция Hasura
+- ✅ Изменили docker-compose.yml, добавили сервис Hasura
+- ✅ Запустили Hasura и проверили доступность GraphQL Console
+- ✅ Проверили, что Hasura видит таблицы из PostgreSQL и генерирует GraphQL API
+- ✅ Протестировали GraphQL Playground (queries, subscriptions)
+- ✅ Настроили базовые разрешения (admin, публичный доступ не требуется)
+
+## 2. Реализация фронтенда (FSD + Next.js)
+- ⏳ Инициализация Next.js проекта (app router)
+- ⏳ Создание структуры FSD с двумя папками pages (app и FSD/pages)
+- ⏳ Настройка Apollo Client и Tailwind CSS
+- ⏳ Реализация базовых страниц и виджетов через именованные экспорты
+- ⏳ Интеграция с Hasura GraphQL (queries, subscriptions)
+- ⏳ Реализация real-time обновлений
+- ⏳ Оптимизация и тесты 
