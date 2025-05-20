@@ -6,6 +6,9 @@ export interface Transaction {
   status: string
   timestamp: string
   block_id: string
+  fee?: string
+  type?: string
+  data?: string
 }
 
 export interface TransactionsState {

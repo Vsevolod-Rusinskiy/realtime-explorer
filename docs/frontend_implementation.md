@@ -21,43 +21,127 @@
 /frontend
   /src
     /app         # Next.js app router (роутинг, layout, страницы)
-    /widgets     # Композиционные блоки и бизнес-логика
+    /widgets     # Композиционные блоки (композиция фич)
     /features    # Фичи, пользовательские сценарии
-    /entities    # Бизнес-сущности (блок, транзакция, аккаунт, событие)
+    /entities    # Бизнес-сущности (блок, транзакция, статистика)
     /shared      # Общие компоненты, api, ui, lib, types
+```
+
+### Детальная структура слоев:
+
+```
+/src
+  /app                  # Next.js App Router
+    page.tsx            # Главная страница
+    layout.tsx          # Основной лейаут с Apollo Provider
+    globals.css         # Глобальные стили
+    page.css            # Стили для главной страницы
+    
+  /widgets              # Композиционные блоки для страниц
+    /blocks             # Виджет списка блоков
+      blocks_list.tsx
+      blocks_list.module.css
+      index.ts          # Публичный API
+    /transactions       # Виджет списка транзакций
+      transactions_list.tsx
+      transactions_list.module.css
+      index.ts          # Публичный API
+    /stats              # Виджет статистики
+      stats_widget.tsx
+      stats_widget.module.css
+      index.ts          # Публичный API
+      
+  /features             # Бизнес-фичи
+    /blocks-list        # Фича списка блоков
+      /ui
+        blocks_list.tsx
+        styles.module.css
+      index.ts          # Публичный API
+    /transactions-list  # Фича списка транзакций
+      /ui
+        transactions_list.tsx
+        styles.module.css
+      index.ts          # Публичный API
+    /stats-widget       # Фича виджета статистики
+      /ui
+        stats_widget.tsx
+        styles.module.css
+      index.ts          # Публичный API
+      
+  /entities             # Бизнес-сущности
+    /block              # Сущность блока
+      /model
+        types.ts        # Типы для блока
+      /ui
+        /block_card     # UI компонент карточки блока
+          index.tsx
+          styles.module.css
+      index.ts          # Публичный API
+    /transaction        # Сущность транзакции
+      /model
+        types.ts        # Типы для транзакции
+      /ui
+        /transaction_card # UI компонент карточки транзакции
+          index.tsx
+          styles.module.css
+      index.ts          # Публичный API
+    /stats              # Сущность статистики
+      /model
+        types.ts        # Типы для статистики
+      /ui
+        /stat_card      # UI компонент карточки статистики
+          index.tsx
+          styles.module.css
+      index.ts          # Публичный API
+      
+  /shared               # Общие ресурсы
+    /api                # API клиент
+      /model            # GraphQL запросы и подписки
+        blocks.ts       # Запросы к блокам
+        transactions.ts # Запросы к транзакциям
+        stats.ts        # Запросы к статистике
+      /config           # Конфигурация API
+        apollo.ts       # Настройка Apollo Client
+      apollo_provider.tsx # Провайдер Apollo Client
+      index.ts          # Публичный API
 ```
 
 - В папке `/src/app` — роутинг, layout и страницы Next.js (app router)
 - Вся логика, UI и бизнес-структура — в FSD-слоях (`widgets`, `features`, `entities`, `shared`)
-- Слой `pages` отсутствует, страницы реализуются только в `/src/app`
+- Каждый слой имеет публичный API через index.ts файлы
+- Соблюдаются правильные границы между слоями через публичные API
 
-## Новая структура главной страницы
+## Струтктура главной страницы
 
-- Теперь в проекте используется только одна главная страница (`/`), на которой одновременно отображаются два real-time списка:
+- Главная страница (`/`) одновременно отображает:
+  - Сверху: виджет статистики с метриками (блоков в секунду, транзакций в секунду)
   - Слева: последние 30 блоков (обновляются в реальном времени)
   - Справа: последние 30 транзакций (обновляются в реальном времени)
-- Tailwind CSS полностью удалён из проекта. Для layout и стилизации используется обычный CSS (см. файл `frontend/src/app/page.css`).
-- Вся логика real-time реализована через Apollo Client и GraphQL subscriptions (WebSocket).
-- Страница реализована в файле `frontend/src/app/page.tsx`.
+- Для стилизации используется CSS Modules
+- Вся логика real-time реализована через Apollo Client и GraphQL subscriptions (WebSocket)
 
 ### Пример главной страницы
 
-```typescript
+```tsx
 // src/app/page.tsx
-import { BlocksList } from '@/widgets/blocks/blocks_list'
-import { TransactionsList } from '@/widgets/transactions/transactions_list'
+'use client'
+
+import { BlocksList } from '@/widgets/blocks'
+import { TransactionsList } from '@/widgets/transactions'
+import { StatsWidget } from '@/widgets/stats'
 import './page.css'
 
 export default function Home() {
   return (
     <main className="my_main_container">
+      {/* Статистика наверху */}
+      <StatsWidget />
+      
       <div className="my_columns_wrapper">
         <div className="my_column">
-          <h1 className="my_title">Последние 30 блоков (real-time)</h1>
           <BlocksList />
         </div>
         <div className="my_column">
-          <h1 className="my_title">Последние 30 транзакций (real-time)</h1>
           <TransactionsList />
         </div>
       </div>
@@ -66,13 +150,53 @@ export default function Home() {
 }
 ```
 
-## Корректировки по структуре
+## Структура данных
 
-- Вся логика и UI по-прежнему разделены по FSD-слоям (`widgets`, `features`, `entities`, `shared`).
-- В папке `/src/app` теперь только одна страница — главная.
-- Примеры страниц с отдельными виджетами (blocks, dashboard и т.д.) больше не актуальны.
+Для отображения данных используются следующие интерфейсы:
 
-## 3. Data Flow (квадратики)
+### Block (блок)
+```typescript
+export interface Block {
+  id: string         // Хеш блока (primary key)
+  hash: string       // Хеш блока
+  timestamp: string  // Время создания в строковом формате
+  number?: string    // Номер блока (опционально для фронтенда)
+  validator?: string // Адрес валидатора (опционально для фронтенда)
+  status?: string    // Статус блока (опционально для фронтенда)
+  size?: number      // Размер блока (опционально для фронтенда)
+}
+```
+
+### Transaction (транзакция)
+```typescript
+export interface Transaction {
+  id: string             // Уникальный ID транзакции
+  from_id: string | null // ID отправителя
+  to_id: string | null   // ID получателя
+  amount: string         // Сумма в строковом формате
+  status: string         // Статус транзакции
+  timestamp: string      // Время в строковом формате
+  block_id: string       // ID связанного блока
+  fee?: string           // Комиссия (опционально для фронтенда)
+  type?: string          // Тип транзакции (опционально для фронтенда)
+  data?: string          // Доп. данные (опционально для фронтенда)
+}
+```
+
+### StatsData (статистика)
+```typescript
+export interface StatsData {
+  blocksPerSecond: number   // Блоков в секунду
+  tps: number               // Транзакций в секунду
+  totalBlocks?: string      // Всего блоков (опционально)
+  totalTransactions?: string // Всего транзакций (опционально)
+  totalAccounts?: string    // Всего аккаунтов (опционально)
+  averageBlockTime?: number // Среднее время блока (опционально)
+  lastBlock?: number        // Последний блок (опционально)
+}
+```
+
+## Data Flow (квадратики)
 
 ```
 +-------------------+
@@ -102,48 +226,69 @@ export default function Home() {
 +-------------------+
 ```
 
-## 5. Основные принципы (обновлено)
+## Основные принципы
 - FSD-структура для масштабируемости
+- Строгие границы между слоями через публичные API
 - Только именованные экспорты
-- Вся логика и UI — в FSD-слоях, в app только роутинг, layout и одна страница
+- Вся бизнес-логика — в слоях features и entities
+- Вся композиция — в слое widgets
+- Все общие модули — в слое shared
 - SSR и real-time через Apollo/Hasura
 - **Real-time обновления реализуются через GraphQL subscriptions (WebSocket, graphql-ws) и Apollo Client**
-- Для layout используется обычный CSS, а не Tailwind
+- Для стилизации используются CSS Modules
 
-## 6. План реализации
-1. Инициализация Next.js проекта (app router)
-2. Создание структуры FSD (app + FSD-слои)
-3. Настройка Apollo Client
-4. Реализация главной страницы с двумя real-time списками через app router
-5. Интеграция с Hasura GraphQL (queries, subscriptions)
-6. **Реализация real-time обновлений через GraphQL subscriptions (Apollo + graphql-ws):**
-   - Установка пакета graphql-ws
-   - Настройка split transport в Apollo Client (HTTP для query/mutation, WebSocket для subscription)
-   - Использование useSubscription для real-time данных (блоки, транзакции)
-   - UI автоматически обновляется при появлении новых данных
-   - Добавление анимации появления новых блоков и транзакций
-7. Оптимизация и тесты
+## GraphQL-запросы и подписки
 
-## 7. Документ будет дополняться по мере разработки
+Все GraphQL запросы и подписки вынесены в отдельные файлы в директории `/shared/api/model`:
 
-# План реализации фронтенда (Next.js + Hasura + Apollo)
+### Blocks Subscription
+```graphql
+subscription Blocks {
+  block(order_by: {timestamp: desc}, limit: 30) {
+    id
+    hash
+    timestamp
+    number
+    validator
+    status
+    size
+  }
+}
+```
 
-## 1. Интеграция Hasura
-- ✅ Изменили docker-compose.yml, добавили сервис Hasura
-- ✅ Запустили Hasura и проверили доступность GraphQL Console
-- ✅ Проверили, что Hasura видит таблицы из PostgreSQL и генерирует GraphQL API
-- ✅ Протестировали GraphQL Playground (queries, subscriptions)
-- ✅ Настроили базовые разрешения (admin, публичный доступ не требуется)
+### Transactions Subscription
+```graphql
+subscription Transactions {
+  transaction(order_by: {timestamp: desc}, limit: 30) {
+    id
+    from_id
+    to_id
+    amount
+    status
+    timestamp
+    block_id
+    fee
+    type
+    data
+  }
+}
+```
 
-## 2. Реализация фронтенда (FSD + Next.js)
+### Stats (Recent Blocks) Subscription
+```graphql
+subscription RecentBlocks {
+  block(order_by: {timestamp: desc}, limit: 10) {
+    timestamp
+  }
+}
+```
+
+## Статус проекта
 - ✅ Инициализация Next.js проекта (app router)
 - ✅ Создание структуры FSD (app + FSD-слои)
 - ✅ Настройка Apollo Client
-- ✅ Реализация главной страницы с двумя real-time списками
-- ✅ Интеграция с Hasura GraphQL (queries, subscriptions)
+- ✅ Реализация главной страницы с real-time списками и статистикой
+- ✅ Интеграция с Hasura GraphQL (subscriptions)
 - ✅ Реализация real-time обновлений
+- ✅ Рефакторинг в соответствии с FSD (четкие границы слоев)
 - ⏳ Оптимизация и тесты 
-
----
-
-✅ На главной странице реализован real-time вывод блоков и транзакций в две колонки. 

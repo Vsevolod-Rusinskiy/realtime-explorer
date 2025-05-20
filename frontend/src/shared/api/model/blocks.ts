@@ -6,6 +6,10 @@ export const BLOCKS_SUBSCRIPTION = gql`
       id
       hash
       timestamp
+      number
+      validator
+      status
+      size
     }
   }
 ` 

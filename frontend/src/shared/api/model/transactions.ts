@@ -10,6 +10,9 @@ export const TRANSACTIONS_SUBSCRIPTION = gql`
       status
       timestamp
       block_id
+      fee
+      type
+      data
     }
   }
 ` 
