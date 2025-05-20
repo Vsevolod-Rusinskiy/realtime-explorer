@@ -14,11 +14,11 @@ export default function Home() {
       
       <div className="my_columns_wrapper">
         <div className="my_column">
-          <h1 className="my_title">Последние 30 блоков (real-time)</h1>
+          <h1 className="my_title">Блоки</h1>
           <BlocksList />
         </div>
         <div className="my_column">
-          <h1 className="my_title">Последние 30 транзакций (real-time)</h1>
+          <h1 className="my_title">Транзакции</h1>
           <TransactionsList />
         </div>
       </div>

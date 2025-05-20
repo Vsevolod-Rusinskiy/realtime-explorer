@@ -1,9 +1,9 @@
 .stats_container {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 32px;
+  flex-wrap: nowrap;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   width: 100%;
 }
 
@@ -11,8 +11,8 @@
   background: linear-gradient(145deg, #1e2029, #25282f);
   border-radius: 12px;
   padding: 16px 20px;
-  min-width: 180px;
-  flex-grow: 1;
+  min-width: 260px;
+  flex: 1;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
