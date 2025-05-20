@@ -1,12 +1,23 @@
 'use client'
 
 import { BlocksList } from '@/widgets/blocks/blocks_list'
+import { TransactionsList } from '@/widgets/transactions/transactions_list'
+import './page.css'
 
 export default function Home() {
+  console.log('[Home] page render')
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-8 gap-8">
-      <h1 className="text-2xl font-bold mb-4">Последние 10 блоков (real-time)</h1>
-      <BlocksList />
+    <main className="my_main_container">
+      <div className="my_columns_wrapper">
+        <div className="my_column">
+          <h1 className="my_title">Последние 10 блоков (real-time)</h1>
+          <BlocksList />
+        </div>
+        <div className="my_column">
+          <h1 className="my_title">Последние 30 транзакций (real-time)</h1>
+          <TransactionsList />
+        </div>
+      </div>
     </main>
   )
 }
