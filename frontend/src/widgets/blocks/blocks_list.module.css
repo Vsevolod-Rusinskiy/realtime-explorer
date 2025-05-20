@@ -12,12 +12,14 @@
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   padding: 12px 14px;
-  transition: box-shadow 0.3s, transform 0.2s;
+  transition: box-shadow 0.3s, transform 0.2s, border-color 0.3s;
+  border: 2px solid transparent;
 }
 
 .block_card:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transform: translateY(-2px);
+  border-color: rgba(255, 82, 82, 0.2);
 }
 
 .block_id {
@@ -43,10 +45,23 @@
 }
 
 .fade_in {
-  animation: fade-in 0.7s ease;
+  animation: highlight-border 1.5s ease;
+  border: 2px solid transparent;
+  position: relative;
+  z-index: 1;
 }
 
-@keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+@keyframes highlight-border {
+  0% { 
+    border-color: #ff5252;
+    box-shadow: 0 0 15px rgba(255, 82, 82, 0.7);
+  }
+  50% {
+    border-color: #ff5252;
+    box-shadow: 0 0 10px rgba(255, 82, 82, 0.5);
+  }
+  100% { 
+    border-color: transparent;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
 } 

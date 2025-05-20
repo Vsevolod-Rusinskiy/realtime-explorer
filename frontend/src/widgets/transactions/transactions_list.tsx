@@ -39,7 +39,8 @@ export function TransactionsList() {
     if (newTx) {
       setVisibleTxs(data.transaction)
       setNewId(newTx.id)
-      setTimeout(() => setNewId(null), 800)
+      // Через 1500мс убираем эффект подсветки рамки (соответствует длительности анимации)
+      setTimeout(() => setNewId(null), 1500)
     } else {
       setVisibleTxs(data.transaction)
       setNewId(null)

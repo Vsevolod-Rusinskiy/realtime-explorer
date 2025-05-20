@@ -38,8 +38,8 @@ export function BlocksList() {
     if (newBlock) {
       setVisibleBlocks(data.block)
       setNewId(newBlock.id)
-      // Через 800мс убираем fade-in
-      setTimeout(() => setNewId(null), 800)
+      // Через 1500мс убираем эффект подсветки рамки (соответствует длительности анимации)
+      setTimeout(() => setNewId(null), 1500)
     } else {
       setVisibleBlocks(data.block)
       setNewId(null)
