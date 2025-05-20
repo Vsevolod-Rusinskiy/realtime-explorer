@@ -1,8 +1,8 @@
 'use client'
 
 import { useSubscription } from '@apollo/client'
-import { useEffect, useState, useRef } from 'react'
-import { RECENT_BLOCKS_SUBSCRIPTION } from '@/shared/api/model/stats'
+import { useEffect, useState } from 'react'
+import { RECENT_BLOCKS_SUBSCRIPTION } from '@/shared/api'
 import { StatCard } from '@/entities/stats'
 import styles from './styles.module.css'
 

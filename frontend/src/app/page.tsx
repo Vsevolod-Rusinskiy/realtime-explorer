@@ -1,7 +1,7 @@
 'use client'
 
-import { BlocksList } from '@/widgets/blocks/blocks_list'
-import { TransactionsList } from '@/widgets/transactions/transactions_list'
+import { BlocksList } from '@/widgets/blocks'
+import { TransactionsList } from '@/widgets/transactions'
 import { StatsWidget } from '@/widgets/stats'
 import './page.css'
 

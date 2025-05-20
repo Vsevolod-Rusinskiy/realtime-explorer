@@ -2,7 +2,7 @@
 
 import { useSubscription } from '@apollo/client'
 import { useEffect, useRef, useState } from 'react'
-import { TRANSACTIONS_SUBSCRIPTION } from '@/shared/api/model/transactions'
+import { TRANSACTIONS_SUBSCRIPTION } from '@/shared/api'
 import { Transaction, TransactionCard } from '@/entities/transaction'
 import styles from './styles.module.css'
 

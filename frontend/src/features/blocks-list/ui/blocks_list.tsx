@@ -2,7 +2,7 @@
 
 import { useSubscription } from '@apollo/client'
 import { useEffect, useRef, useState } from 'react'
-import { BLOCKS_SUBSCRIPTION } from '@/shared/api/model/blocks'
+import { BLOCKS_SUBSCRIPTION } from '@/shared/api'
 import { Block, BlockCard } from '@/entities/block'
 import styles from './styles.module.css'
 
