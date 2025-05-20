@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   padding: 32px;
   gap: 32px;
@@ -22,8 +22,19 @@
 }
 
 .my_title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 16px;
   color: #fff;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+  .my_columns_wrapper {
+    flex-direction: column;
+  }
+  
+  .my_title {
+    font-size: 1.25rem;
+  }
 } 
