@@ -17,78 +17,43 @@ const BLOCKS_SUBSCRIPTION = gql`
 
 export function BlocksList() {
   const { data, loading, error } = useSubscription(BLOCKS_SUBSCRIPTION)
-  // Список блоков, которые реально отображаются
   const [visibleBlocks, setVisibleBlocks] = useState<any[]>([])
-  // Очередь новых блоков на появление
-  const queueRef = useRef<any[]>([])
-  // Для анимации: id новых блоков
-  const [newIds, setNewIds] = useState<string[]>([])
-  // Для предотвращения дублирования setTimeout
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const [newId, setNewId] = useState<string | null>(null)
+  const firstRender = useRef(true)
 
-  // Приходит новый массив блоков из подписки
+  // Синхронизируем state с подпиской
   useEffect(() => {
     if (!data?.block) return
-    // id уже отображаемых
-    const currentIds = visibleBlocks.map(b => b.id)
-    // id из подписки
-    const incomingIds = data.block.map((b: any) => b.id)
-    // Новые блоки (которых нет в visibleBlocks)
-    const newBlocks = data.block.filter((b: any) => !currentIds.includes(b.id))
-    // Добавляем новые блоки в очередь
-    if (newBlocks.length > 0) {
-      queueRef.current = [...queueRef.current, ...newBlocks]
-      // Запускаем процесс поочерёдного добавления
-      if (!timerRef.current) {
-        addNextBlock()
-      }
+    // Если первый рендер — просто показываем все 30
+    if (firstRender.current) {
+      setVisibleBlocks(data.block)
+      setNewId(null)
+      firstRender.current = false
+      return
     }
-    // Если какие-то блоки исчезли (например, ушли из топ-30) — удаляем их из visibleBlocks
-    const stillVisible = visibleBlocks.filter(b => incomingIds.includes(b.id))
-    if (stillVisible.length !== visibleBlocks.length) {
-      setVisibleBlocks(stillVisible)
+    // Если появился новый блок (id которого не было)
+    const currentIds = visibleBlocks.map(b => b.id)
+    const incomingIds = data.block.map((b: any) => b.id)
+    const newBlock = data.block.find((b: any) => !currentIds.includes(b.id))
+    if (newBlock) {
+      setVisibleBlocks(data.block)
+      setNewId(newBlock.id)
+      // Через 800мс убираем fade-in
+      setTimeout(() => setNewId(null), 800)
+    } else {
+      setVisibleBlocks(data.block)
+      setNewId(null)
     }
     // eslint-disable-next-line
   }, [data])
 
-  // Функция поочерёдного добавления блоков из очереди
-  function addNextBlock() {
-    if (queueRef.current.length === 0) {
-      timerRef.current = null
-      return
-    }
-    const next = queueRef.current.shift()
-    setVisibleBlocks(prev => [next, ...prev].slice(0, 30))
-    setNewIds(ids => [next.id, ...ids].slice(0, 30))
-    timerRef.current = setTimeout(addNextBlock, 500)
-  }
-
-  // После анимации убираем id из newIds
-  useEffect(() => {
-    if (newIds.length === 0) return
-    const timeout = setTimeout(() => {
-      setNewIds([])
-    }, 800)
-    return () => clearTimeout(timeout)
-  }, [newIds])
-
-  useEffect(() => {
-    if (error) {
-      console.error('[BlocksList] ошибка подписки:', error)
-    }
-  }, [error])
-
-  if (loading) {
-    return <div>Загрузка блоков...</div>
-  }
-  if (error) {
-    return <div>Ошибка загрузки: {error.message}</div>
-  }
+  if (loading) return <div>Загрузка блоков...</div>
+  if (error) return <div>Ошибка загрузки: {error.message}</div>
 
   return (
     <div className={styles.blocks_list_container}>
       {visibleBlocks.map((block: any) => {
-        const isNew = newIds.includes(block.id)
+        const isNew = newId === block.id
         return (
           <div
             key={block.id}
