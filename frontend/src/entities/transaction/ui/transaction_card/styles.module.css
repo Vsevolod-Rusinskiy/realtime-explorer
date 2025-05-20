@@ -1,0 +1,58 @@
+.transaction_card {
+  background-color: #08080c;
+  border: 2px solid #292935;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  min-width: 220px;
+}
+
+.transaction_card:hover {
+  border-color: #3d3d4d;
+  transform: translateY(-2px);
+}
+
+.transaction_id {
+  font-weight: bold;
+  font-size: 16px;
+  color: #ffffff;
+  margin-bottom: 8px;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+.transaction_from_to {
+  font-family: monospace;
+  font-size: 14px;
+  color: #bbbbcc;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.transaction_time {
+  font-size: 12px;
+  color: #888899;
+}
+
+.fade_in {
+  animation-name: highlight;
+  animation-duration: 1.5s;
+  animation-timing-function: ease;
+}
+
+@keyframes highlight {
+  0% {
+    border-color: #4CAF50;
+    box-shadow: 0 0 8px #4CAF50;
+  }
+  50% {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px #4CAF50;
+  }
+  100% {
+    border-color: #292935;
+    box-shadow: none;
+  }
+} 

@@ -1,0 +1,8 @@
+.stats_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+} 

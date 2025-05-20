@@ -1,0 +1,61 @@
+.stat_card {
+  background-color: #08080c;
+  border: 2px solid #292935;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0 16px;
+  width: 240px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat_card:hover {
+  border-color: #3d3d4d;
+  transform: translateY(-2px);
+}
+
+.stat_title {
+  font-size: 14px;
+  color: #888899;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat_value {
+  font-size: 36px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.stat_subtitle {
+  font-size: 14px;
+  color: #888899;
+}
+
+.stat_highlight {
+  color: #61dafb;
+  font-weight: bold;
+}
+
+.fade_in {
+  animation-name: highlight;
+  animation-duration: 1.5s;
+  animation-timing-function: ease;
+}
+
+@keyframes highlight {
+  0% {
+    border-color: #4CAF50;
+    box-shadow: 0 0 8px #4CAF50;
+  }
+  50% {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px #4CAF50;
+  }
+  100% {
+    border-color: #292935;
+    box-shadow: none;
+  }
+} 
