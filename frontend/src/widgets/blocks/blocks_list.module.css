@@ -1,0 +1,45 @@
+.blocks_list_container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.block_card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 18px 20px;
+  transition: box-shadow 0.3s;
+  animation: fade-in 0.7s ease;
+}
+
+.block_card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+}
+
+.block_id {
+  font-family: monospace;
+  font-size: 13px;
+  color: #888;
+}
+
+.block_hash {
+  font-family: monospace;
+  font-size: 15px;
+  color: #222;
+  margin: 4px 0;
+}
+
+.block_time {
+  font-family: monospace;
+  font-size: 12px;
+  color: #aaa;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+} 

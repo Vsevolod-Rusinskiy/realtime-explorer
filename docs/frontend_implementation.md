@@ -11,7 +11,7 @@
 ```
 
 - Hasura GraphQL предоставляет API на основе схемы PostgreSQL
-- Apollo Client обеспечивает связь с GraphQL, включая real-time подписки
+- Apollo Client обеспечивает связь с GraphQL, включая real-time подписки через WebSocket (graphql-ws)
 - Next.js рендерит интерфейс, SSR, FSD-структура
 - Пользователь получает real-time обновления через UI
 
@@ -89,6 +89,7 @@ export default function BlocksPage() {
 - Вся логика и UI — в FSD-слоях, в app только роутинг, layout и страницы
 - SSR и real-time через Apollo/Hasura
 - Tailwind CSS для стилей
+- **Real-time обновления реализуются через GraphQL subscriptions (WebSocket, graphql-ws) и Apollo Client**
 
 ## 6. План реализации
 1. Инициализация Next.js проекта (app router)
@@ -96,7 +97,12 @@ export default function BlocksPage() {
 3. Настройка Apollo Client и Tailwind CSS
 4. Реализация базовых страниц и виджетов через app router
 5. Интеграция с Hasura GraphQL (queries, subscriptions)
-6. Реализация real-time обновлений
+6. **Реализация real-time обновлений через GraphQL subscriptions (Apollo + graphql-ws):**
+   - Установка пакета graphql-ws
+   - Настройка split transport в Apollo Client (HTTP для query/mutation, WebSocket для subscription)
+   - Использование useSubscription для real-time данных (например, блоки)
+   - UI автоматически обновляется при появлении новых данных
+   - Добавление анимации появления новых блоков
 7. Оптимизация и тесты
 
 ## 7. Документ будет дополняться по мере разработки
