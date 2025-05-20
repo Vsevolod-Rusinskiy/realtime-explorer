@@ -1,7 +1,7 @@
 'use client'
 
 import { useSubscription, gql } from '@apollo/client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './blocks_list.module.css'
 
 // GraphQL subscription на последние 30 блоков (по убыванию времени)
@@ -16,20 +16,61 @@ const BLOCKS_SUBSCRIPTION = gql`
 `
 
 export function BlocksList() {
-  // Apollo useSubscription автоматически обновляет данные при появлении новых блоков
   const { data, loading, error } = useSubscription(BLOCKS_SUBSCRIPTION)
-  const prevIds = useRef<string[]>([])
+  // Список блоков, которые реально отображаются
+  const [visibleBlocks, setVisibleBlocks] = useState<any[]>([])
+  // Очередь новых блоков на появление
+  const queueRef = useRef<any[]>([])
+  // Для анимации: id новых блоков
+  const [newIds, setNewIds] = useState<string[]>([])
+  // Для предотвращения дублирования setTimeout
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Вычисляем новые блоки (id которых не было в предыдущем рендере)
-  const newIds = data?.block
-    ? data.block.map((b: any) => b.id).filter((id: string) => !prevIds.current.includes(id))
-    : []
-
+  // Приходит новый массив блоков из подписки
   useEffect(() => {
-    if (data?.block) {
-      prevIds.current = data.block.map((b: any) => b.id)
+    if (!data?.block) return
+    // id уже отображаемых
+    const currentIds = visibleBlocks.map(b => b.id)
+    // id из подписки
+    const incomingIds = data.block.map((b: any) => b.id)
+    // Новые блоки (которых нет в visibleBlocks)
+    const newBlocks = data.block.filter((b: any) => !currentIds.includes(b.id))
+    // Добавляем новые блоки в очередь
+    if (newBlocks.length > 0) {
+      queueRef.current = [...queueRef.current, ...newBlocks]
+      // Запускаем процесс поочерёдного добавления
+      if (!timerRef.current) {
+        addNextBlock()
+      }
     }
+    // Если какие-то блоки исчезли (например, ушли из топ-30) — удаляем их из visibleBlocks
+    const stillVisible = visibleBlocks.filter(b => incomingIds.includes(b.id))
+    if (stillVisible.length !== visibleBlocks.length) {
+      setVisibleBlocks(stillVisible)
+    }
+    // eslint-disable-next-line
   }, [data])
+
+  // Функция поочерёдного добавления блоков из очереди
+  function addNextBlock() {
+    if (queueRef.current.length === 0) {
+      timerRef.current = null
+      return
+    }
+    const next = queueRef.current.shift()
+    setVisibleBlocks(prev => [next, ...prev].slice(0, 30))
+    setNewIds(ids => [next.id, ...ids].slice(0, 30))
+    timerRef.current = setTimeout(addNextBlock, 500)
+  }
+
+  // После анимации убираем id из newIds
+  useEffect(() => {
+    if (newIds.length === 0) return
+    const timeout = setTimeout(() => {
+      setNewIds([])
+    }, 800)
+    return () => clearTimeout(timeout)
+  }, [newIds])
 
   useEffect(() => {
     if (error) {
@@ -46,7 +87,7 @@ export function BlocksList() {
 
   return (
     <div className={styles.blocks_list_container}>
-      {data.block.map((block: any) => {
+      {visibleBlocks.map((block: any) => {
         const isNew = newIds.includes(block.id)
         return (
           <div
