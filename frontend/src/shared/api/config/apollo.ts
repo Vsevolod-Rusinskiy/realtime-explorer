@@ -3,11 +3,11 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { createClient } from 'graphql-ws'
 import { getMainDefinition } from '@apollo/client/utilities'
 
-    // const HASURA_GRAPHQL_HTTP = 'http://localhost:3003/v1/graphql'
-    // const HASURA_GRAPHQL_WS = 'ws://localhost:3003/v1/graphql'
+    const HASURA_GRAPHQL_HTTP = 'http://localhost:3003/v1/graphql'
+    const HASURA_GRAPHQL_WS = 'ws://localhost:3003/v1/graphql'
 
-const HASURA_GRAPHQL_HTTP = 'http://193.108.113.149:3003/v1/graphql'
-const HASURA_GRAPHQL_WS = 'ws://193.108.113.149:3003/v1/graphql'
+// const HASURA_GRAPHQL_HTTP = 'http://193.108.113.149:3003/v1/graphql'
+// const HASURA_GRAPHQL_WS = 'ws://193.108.113.149:3003/v1/graphql'
 
 const httpLink = new HttpLink({ uri: HASURA_GRAPHQL_HTTP })
 
