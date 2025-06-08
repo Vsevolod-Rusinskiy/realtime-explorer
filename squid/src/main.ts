@@ -8,6 +8,12 @@ import {Account, Block, Transaction, Event, Statistics} from './model'
 import {events} from './types'
 import {cleanupOldBlocks} from './db/cleanup'
 
+// Глобальные переменные для логирования раз в минуту
+let lastLogTime = Date.now()
+let totalBlocksProcessed = 0
+let totalBatchTime = 0
+let totalDbTime = 0
+
 async function main() {
   const processor = await createProcessor()
   processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
@@ -43,17 +49,13 @@ async function main() {
       })
     }
     
-    console.log(`🔄 Начинаем обработку батча из ${ctx.blocks.length} блоков`)
+    // Накапливаем статистику без детального логирования
+    totalBlocksProcessed += ctx.blocks.length
     
     for (const block of ctx.blocks) {
       const blockProcessStartTime = Date.now()
       const blockTimestamp = new Date(block.header.timestamp || 0)
       const blockAge = Date.now() - blockTimestamp.getTime()
-      
-      console.log(`📦 Блок #${block.header.height}`)
-      console.log(`   Hash: ${block.header.hash}`)
-      console.log(`   Время блока: ${blockTimestamp.toISOString()}`)
-      console.log(`   Возраст блока: ${blockAge}ms`)
       
       // Создаем объект блока
       const blockEntity = new Block({
@@ -109,8 +111,6 @@ async function main() {
       }
       
       for (const event of block.events) {
-        console.log(`  Событие: ${event.name}`)
-        
         // Обработка Balances.Transfer (как было раньше)
         if (event.name === 'Balances.Transfer') {
           try {
@@ -118,7 +118,6 @@ async function main() {
             const from = args.from?.toString() || ''
             const to = args.to?.toString() || ''
             const amount = args.amount ? BigInt(args.amount.toString()) : 0n
-            console.log(`    Перевод: ${from} -> ${to}, сумма: ${amount}`)
             
             // Создаём/обновляем аккаунты
             if (from && !accounts.has(from)) {
@@ -165,7 +164,6 @@ async function main() {
         }
         // Обработка других событий Balances (как было раньше)
         else if (event.name.startsWith('Balances.') && event.name !== 'Balances.Transfer') {
-          console.log(`    Балансовое событие: ${event.name}, args:`, event.args)
           
           // Если это Balances.Withdraw, добавляем аккаунт
           if (event.name === 'Balances.Withdraw') {
@@ -176,7 +174,6 @@ async function main() {
               
               // Создаем аккаунт, если еще не существует
               if (who && !accounts.has(who)) {
-                console.log(`    Добавляем аккаунт: ${who} из события Withdraw`)
                 accounts.set(who, new Account({
                   id: who,
                   balance: 0n, // Баланс нам неизвестен
@@ -228,44 +225,26 @@ async function main() {
           totalEvents++
         }
       }
-      
-      const blockProcessTime = Date.now() - blockProcessStartTime
-      console.log(`   ⏱️ Время обработки блока: ${blockProcessTime}ms`)
     }
     
     // ⏱️ Засекаем время начала записи в БД
     const dbWriteStartTime = Date.now()
     
-    // Сохраняем блоки
+    // Сохраняем данные без детального логирования
     if (blocks.size > 0) {
-      const blockSaveStart = Date.now()
       await ctx.store.upsert([...blocks.values()])
-      const blockSaveTime = Date.now() - blockSaveStart
-      console.log(`💾 Сохранено блоков: ${blocks.size} за ${blockSaveTime}ms`)
     }
     
-    // Сохраняем транзакции
     if (transactions.size > 0) {
-      const txSaveStart = Date.now()
       await ctx.store.upsert([...transactions.values()])
-      const txSaveTime = Date.now() - txSaveStart
-      console.log(`💾 Сохранено транзакций: ${transactions.size} за ${txSaveTime}ms`)
     }
     
-    // Сохраняем события
     if (eventsMap.size > 0) {
-      const eventSaveStart = Date.now()
       await ctx.store.upsert([...eventsMap.values()])
-      const eventSaveTime = Date.now() - eventSaveStart
-      console.log(`💾 Сохранено событий: ${eventsMap.size} за ${eventSaveTime}ms`)
     }
     
-    // Сохраняем аккаунты
     if (accounts.size > 0) {
-      const accountSaveStart = Date.now()
       await ctx.store.upsert([...accounts.values()])
-      const accountSaveTime = Date.now() - accountSaveStart
-      console.log(`💾 Сохранено аккаунтов: ${accounts.size} за ${accountSaveTime}ms`)
     }
     
     // Обновляем статистику
@@ -281,17 +260,31 @@ async function main() {
     await ctx.store.upsert(stats)
     
     const dbWriteTime = Date.now() - dbWriteStartTime
-    const totalBatchTime = Date.now() - batchStartTime
+    const batchTime = Date.now() - batchStartTime
     
-    console.log(`📊 Статистика батча:`)
-    console.log(`   - Блоков обработано: ${ctx.blocks.length}`)
-    console.log(`   - Транзакций: ${transactions.size}`)
-    console.log(`   - Событий: ${eventsMap.size}`)
-    console.log(`   - Аккаунтов: ${accounts.size}`)
-    console.log(`   ⏱️ Время записи в БД: ${dbWriteTime}ms`)
-    console.log(`   ⏱️ Общее время батча: ${totalBatchTime}ms`)
-    console.log(`   🚀 Скорость: ${(ctx.blocks.length / (totalBatchTime / 1000)).toFixed(2)} блоков/сек`)
-    console.log(`---`)
+    // Накапливаем статистику
+    totalDbTime += dbWriteTime
+    totalBatchTime += batchTime
+    
+    // Логируем раз в минуту
+    const currentTime = Date.now()
+    if (currentTime - lastLogTime >= 60000) { // 60 секунд
+      const timeElapsed = (currentTime - lastLogTime) / 1000
+      const avgSpeed = totalBlocksProcessed / timeElapsed
+      
+      console.log(`📊 Статистика за ${timeElapsed.toFixed(0)} сек:`)
+      console.log(`   🔄 Блоков обработано: ${totalBlocksProcessed}`)
+      console.log(`   ⚡ Средняя скорость: ${avgSpeed.toFixed(2)} блоков/сек`)
+      console.log(`   ⏱️ Среднее время БД: ${(totalDbTime / totalBlocksProcessed).toFixed(1)}ms/блок`)
+      console.log(`   📈 Общее время обработки: ${(totalBatchTime / 1000).toFixed(1)}с`)
+      console.log(`---`)
+      
+      // Сбрасываем счетчики
+      lastLogTime = currentTime
+      totalBlocksProcessed = 0
+      totalBatchTime = 0
+      totalDbTime = 0
+    }
     
     // Очищаем старые блоки
     try {

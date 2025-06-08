@@ -12,10 +12,8 @@ import {
 import { RPC_URL, DEPTH } from './config'
 import { DB_CONFIG } from './db-config'
 
-// Выводим информацию о настройках подключения к БД
-console.log('Используем настройки подключения к базе данных:')
-console.log(`- Host: ${DB_CONFIG.host}:${DB_CONFIG.port}`)
-console.log(`- Database: ${DB_CONFIG.database}`)
+// Выводим информацию о настройках подключения к БД (только при запуске)
+console.log('🔧 Настройки БД:', `${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}`)
 
 export async function createProcessor() {
   const provider = new WsProvider(RPC_URL)
@@ -25,10 +23,7 @@ export async function createProcessor() {
   await api.disconnect()
   const startBlock = Math.max(0, lastBlock - DEPTH)
 
-  console.log(`🚀 Настройка real-time обработки блоков:`)
-  console.log(`- Стартовый блок: ${startBlock}`)
-  console.log(`- Rate limit: 50 запросов/сек`)
-  console.log(`- Real-time режим включен`)
+  console.log(`🚀 Squid индексатор запущен (блоки ${startBlock}+, логи раз в минуту)`)
 
   return new SubstrateBatchProcessor()
     .setRpcEndpoint({
