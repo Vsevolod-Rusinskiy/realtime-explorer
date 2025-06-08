@@ -9,30 +9,37 @@ import styles from './styles.module.css'
 export function BlocksList() {
   const { data, loading, error } = useSubscription(BLOCKS_SUBSCRIPTION)
   const [visibleBlocks, setVisibleBlocks] = useState<Block[]>([])
-  const [newId, setNewId] = useState<string | null>(null)
+  const [animateTopBlock, setAnimateTopBlock] = useState(false)
   const firstRender = useRef(true)
+  const lastAnimationTime = useRef(Date.now())
 
   // Синхронизируем state с подпиской
   useEffect(() => {
     if (!data?.block) return
+    
     // Если первый рендер — просто показываем все 30
     if (firstRender.current) {
       setVisibleBlocks(data.block)
-      setNewId(null)
       firstRender.current = false
       return
     }
-    // Если появился новый блок (id которого не было)
-    const currentIds = visibleBlocks.map(b => b.id)
-    const newBlock = data.block.find((b: Block) => !currentIds.includes(b.id))
-    if (newBlock) {
-      setVisibleBlocks(data.block)
-      setNewId(newBlock.id)
-      // Через 1500мс убираем эффект подсветки рамки (соответствует длительности анимации)
-      setTimeout(() => setNewId(null), 1500)
-    } else {
-      setVisibleBlocks(data.block)
-      setNewId(null)
+
+    // Обновляем блоки в реальном времени
+    const currentTopBlockId = visibleBlocks[0]?.id
+    const newTopBlockId = data.block[0]?.id
+    
+    setVisibleBlocks(data.block)
+    
+    // Если изменился верхний блок И прошло 3 секунды - анимируем
+    if (newTopBlockId && newTopBlockId !== currentTopBlockId) {
+      const now = Date.now()
+      if (now - lastAnimationTime.current >= 3000) { // 3 секунды
+        setAnimateTopBlock(true)
+        lastAnimationTime.current = now
+        
+        // Убираем анимацию через 1.5 секунды
+        setTimeout(() => setAnimateTopBlock(false), 1500)
+      }
     }
     // eslint-disable-next-line
   }, [data])
@@ -42,11 +49,11 @@ export function BlocksList() {
 
   return (
     <div className={styles.blocks_list_container}>
-      {visibleBlocks.map((block: Block) => (
+      {visibleBlocks.map((block: Block, index: number) => (
         <BlockCard
           key={block.id}
           block={block}
-          isNew={newId === block.id}
+          isNew={index === 0 && animateTopBlock}
         />
       ))}
     </div>

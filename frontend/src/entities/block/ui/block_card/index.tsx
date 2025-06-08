@@ -18,6 +18,11 @@ export function BlockCard({ block, isNew }: BlockCardProps) {
 
   return (
     <div className={styles.block_card + (isNew ? ' ' + styles.fade_in : '')}>
+      {block.number && (
+        <div className={styles.block_number}>
+          Блок #{block.number}
+        </div>
+      )}
       <div className={styles.block_id}>
         ID: <span title={block.id}>{shortStr(block.id)}</span>
       </div>

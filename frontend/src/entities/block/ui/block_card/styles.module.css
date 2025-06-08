@@ -14,6 +14,14 @@
   transform: translateY(-2px);
 }
 
+.block_number {
+  font-weight: bold;
+  font-size: 18px;
+  color: #4CAF50;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
 .block_id {
   font-weight: bold;
   font-size: 16px;
