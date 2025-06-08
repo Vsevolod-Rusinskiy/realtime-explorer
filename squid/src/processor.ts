@@ -25,12 +25,21 @@ export async function createProcessor() {
   await api.disconnect()
   const startBlock = Math.max(0, lastBlock - DEPTH)
 
+  console.log(`🚀 Настройка real-time обработки блоков:`)
+  console.log(`- Стартовый блок: ${startBlock}`)
+  console.log(`- Rate limit: 50 запросов/сек`)
+  console.log(`- Real-time режим включен`)
+
   return new SubstrateBatchProcessor()
     .setRpcEndpoint({
       url: RPC_URL,
-      rateLimit: 10
+      rateLimit: 50, // Увеличиваем лимит для real-time
+      requestTimeout: 30000
     })
-    .setBlockRange({ from: startBlock })
+    .setBlockRange({ 
+      from: startBlock,
+      to: undefined // real-time без ограничений
+    })
     .addEvent({
       name: [
         'Balances.Withdraw',

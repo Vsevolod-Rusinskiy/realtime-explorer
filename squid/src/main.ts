@@ -11,6 +11,9 @@ import {cleanupOldBlocks} from './db/cleanup'
 async function main() {
   const processor = await createProcessor()
   processor.run(new TypeormDatabase({supportHotBlocks: true}), async (ctx) => {
+    // ⏱️ Засекаем время начала обработки батча
+    const batchStartTime = Date.now()
+    
     const accounts = new Map<string, Account>()
     const blocks = new Map<string, Block>()
     const transactions = new Map<string, Transaction>()
@@ -40,8 +43,17 @@ async function main() {
       })
     }
     
+    console.log(`🔄 Начинаем обработку батча из ${ctx.blocks.length} блоков`)
+    
     for (const block of ctx.blocks) {
-      console.log(`Блок #${block.header.height}, hash: ${block.header.hash}`)
+      const blockProcessStartTime = Date.now()
+      const blockTimestamp = new Date(block.header.timestamp || 0)
+      const blockAge = Date.now() - blockTimestamp.getTime()
+      
+      console.log(`📦 Блок #${block.header.height}`)
+      console.log(`   Hash: ${block.header.hash}`)
+      console.log(`   Время блока: ${blockTimestamp.toISOString()}`)
+      console.log(`   Возраст блока: ${blockAge}ms`)
       
       // Создаем объект блока
       const blockEntity = new Block({
@@ -216,30 +228,44 @@ async function main() {
           totalEvents++
         }
       }
+      
+      const blockProcessTime = Date.now() - blockProcessStartTime
+      console.log(`   ⏱️ Время обработки блока: ${blockProcessTime}ms`)
     }
+    
+    // ⏱️ Засекаем время начала записи в БД
+    const dbWriteStartTime = Date.now()
     
     // Сохраняем блоки
     if (blocks.size > 0) {
+      const blockSaveStart = Date.now()
       await ctx.store.upsert([...blocks.values()])
-      console.log(`Сохранено блоков: ${blocks.size}`)
+      const blockSaveTime = Date.now() - blockSaveStart
+      console.log(`💾 Сохранено блоков: ${blocks.size} за ${blockSaveTime}ms`)
     }
     
     // Сохраняем транзакции
     if (transactions.size > 0) {
+      const txSaveStart = Date.now()
       await ctx.store.upsert([...transactions.values()])
-      console.log(`Сохранено транзакций: ${transactions.size}`)
+      const txSaveTime = Date.now() - txSaveStart
+      console.log(`💾 Сохранено транзакций: ${transactions.size} за ${txSaveTime}ms`)
     }
     
     // Сохраняем события
     if (eventsMap.size > 0) {
+      const eventSaveStart = Date.now()
       await ctx.store.upsert([...eventsMap.values()])
-      console.log(`Сохранено событий: ${eventsMap.size}`)
+      const eventSaveTime = Date.now() - eventSaveStart
+      console.log(`💾 Сохранено событий: ${eventsMap.size} за ${eventSaveTime}ms`)
     }
     
     // Сохраняем аккаунты
     if (accounts.size > 0) {
+      const accountSaveStart = Date.now()
       await ctx.store.upsert([...accounts.values()])
-      console.log(`Сохранено аккаунтов: ${accounts.size}`)
+      const accountSaveTime = Date.now() - accountSaveStart
+      console.log(`💾 Сохранено аккаунтов: ${accounts.size} за ${accountSaveTime}ms`)
     }
     
     // Обновляем статистику
@@ -253,17 +279,19 @@ async function main() {
     stats.lastUpdated = new Date()
     
     await ctx.store.upsert(stats)
-    console.log('Обновлена статистика:', {
-      totalBlocks: stats.totalBlocks?.toString(),
-      totalTransactions: stats.totalTransactions?.toString(),
-      totalExtrinsics: stats.totalExtrinsics?.toString(),
-      totalEvents: stats.totalEvents?.toString(),
-      totalTransfers: stats.totalTransfers?.toString(),
-      totalWithdraws: stats.totalWithdraws?.toString(),
-      totalAccounts: stats.totalAccounts?.toString()
-    })
     
-    console.log(`Батч обработан: блоков: ${ctx.blocks.length}, транзакций: ${transactions.size}, событий: ${eventsMap.size}, аккаунтов: ${accounts.size}`)
+    const dbWriteTime = Date.now() - dbWriteStartTime
+    const totalBatchTime = Date.now() - batchStartTime
+    
+    console.log(`📊 Статистика батча:`)
+    console.log(`   - Блоков обработано: ${ctx.blocks.length}`)
+    console.log(`   - Транзакций: ${transactions.size}`)
+    console.log(`   - Событий: ${eventsMap.size}`)
+    console.log(`   - Аккаунтов: ${accounts.size}`)
+    console.log(`   ⏱️ Время записи в БД: ${dbWriteTime}ms`)
+    console.log(`   ⏱️ Общее время батча: ${totalBatchTime}ms`)
+    console.log(`   🚀 Скорость: ${(ctx.blocks.length / (totalBatchTime / 1000)).toFixed(2)} блоков/сек`)
+    console.log(`---`)
     
     // Очищаем старые блоки
     try {
@@ -274,7 +302,4 @@ async function main() {
   })
 }
 
-main().catch(e => {
-  console.error(e)
-  process.exit(1)
-})
+main().catch(console.error)
