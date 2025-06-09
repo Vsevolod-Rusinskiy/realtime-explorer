@@ -53,17 +53,17 @@ export function StatsWidget() {
     const txDiff = parseInt(current.total_transactions) - parseInt(previous.total_transactions)
     
     // 🐛 Добавляем логирование для отладки
-    console.log('📊 Отладка расчета скорости:', {
-      current_blocks: current.total_blocks,
-      previous_blocks: previous.total_blocks,
-      blocksDiff,
-      current_tx: current.total_transactions,
-      previous_tx: previous.total_transactions,
-      txDiff,
-      timeDiff,
-      currentBPS: currentStats.blocksPerSecond,
-      currentTPS: currentStats.transactionsPerSecond
-    })
+    // console.log('📊 Отладка расчета скорости:', {
+    //   current_blocks: current.total_blocks,
+    //   previous_blocks: previous.total_blocks,
+    //   blocksDiff,
+    //   current_tx: current.total_transactions,
+    //   previous_tx: previous.total_transactions,
+    //   txDiff,
+    //   timeDiff,
+    //   currentBPS: currentStats.blocksPerSecond,
+    //   currentTPS: currentStats.transactionsPerSecond
+    // })
 
     let blocksPerSecond = currentStats.blocksPerSecond
     let transactionsPerSecond = currentStats.transactionsPerSecond
