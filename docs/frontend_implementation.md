@@ -283,6 +283,34 @@ subscription RecentBlocks {
 }
 ```
 
+## Реализация статистики в реальном времени
+
+### Компонент StatsWidget
+- Использует GraphQL подписку на таблицу `statistics` 
+- Подсчитывает реальную скорость блоков и транзакций на основе изменений в БД
+- Анимация обновления показывается максимум раз в 4 секунды (throttling)
+- Значения не сбрасываются на 0 при отсутствии изменений
+
+### Логика расчета скорости
+```typescript
+// Обновляется только при наличии реальных изменений
+if (timeDiff >= 0.5 && blocksDiff > 0) {
+  blocksPerSecond = Math.round((blocksDiff / timeDiff) * 100) / 100
+}
+if (timeDiff >= 0.5 && txDiff > 0) {
+  transactionsPerSecond = Math.round((txDiff / timeDiff) * 100) / 100
+}
+```
+
+### Анимация с throttling
+```typescript
+// Анимация только раз в 4 секунды
+if (changedFieldsList.length > 0 && (now - lastAnimationTime.current) >= 4000) {
+  setChangedFields(changedFieldsList)
+  lastAnimationTime.current = now
+}
+```
+
 ## Статус проекта
 - ✅ Инициализация Next.js проекта (app router)
 - ✅ Создание структуры FSD (app + FSD-слои)
@@ -291,4 +319,6 @@ subscription RecentBlocks {
 - ✅ Интеграция с Hasura GraphQL (subscriptions)
 - ✅ Реализация real-time обновлений
 - ✅ Рефакторинг в соответствии с FSD (четкие границы слоев)
-- ⏳ Оптимизация и тесты 
+- ✅ Исправление логики статистики (GraphQL подписка, расчет скорости)
+- ✅ Оптимизация анимации (throttling, предотвращение сброса на 0)
+- ⏳ Покрытие тестами 

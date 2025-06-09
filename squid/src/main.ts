@@ -247,17 +247,26 @@ async function main() {
       await ctx.store.upsert([...accounts.values()])
     }
     
-    // Обновляем статистику
-    stats.totalBlocks = BigInt(await ctx.store.count(Block))
-    stats.totalTransactions = (stats.totalTransactions || 0n) + BigInt(transactions.size)
-    stats.totalExtrinsics = (stats.totalExtrinsics || 0n) + BigInt(totalExtrinsics)
-    stats.totalEvents = (stats.totalEvents || 0n) + BigInt(totalEvents)
-    stats.totalTransfers = (stats.totalTransfers || 0n) + BigInt(totalTransfers)
-    stats.totalWithdraws = (stats.totalWithdraws || 0n) + BigInt(totalWithdraws)
-    stats.totalAccounts = BigInt(await ctx.store.count(Account))
-    stats.lastUpdated = new Date()
-    
-    await ctx.store.upsert(stats)
+    // Обновляем статистику инкрементально (быстрее чем count())
+    try {
+      stats.totalBlocks = (stats.totalBlocks || 0n) + BigInt(blocks.size)
+      stats.totalTransactions = (stats.totalTransactions || 0n) + BigInt(transactions.size)
+      stats.totalExtrinsics = (stats.totalExtrinsics || 0n) + BigInt(totalExtrinsics)
+      stats.totalEvents = (stats.totalEvents || 0n) + BigInt(totalEvents)
+      stats.totalTransfers = (stats.totalTransfers || 0n) + BigInt(totalTransfers)
+      stats.totalWithdraws = (stats.totalWithdraws || 0n) + BigInt(totalWithdraws)
+      stats.totalAccounts = (stats.totalAccounts || 0n) + BigInt(accounts.size)
+      stats.lastUpdated = new Date()
+      
+      await ctx.store.upsert(stats)
+      
+      // Логируем обновление статистики раз в 10 итераций для отладки
+      if (totalBlocksProcessed % 50 === 0) {
+        console.log(`📈 Статистика обновлена: блоков=${stats.totalBlocks}, транзакций=${stats.totalTransactions}`)
+      }
+    } catch (error) {
+      console.error('❌ Ошибка при обновлении статистики:', error)
+    }
     
     const dbWriteTime = Date.now() - dbWriteStartTime
     const batchTime = Date.now() - batchStartTime

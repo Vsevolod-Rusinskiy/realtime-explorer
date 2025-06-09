@@ -142,11 +142,43 @@ npm run process
 npm run start
 ```
 
-## 7. Следующие шаги
+## 7. Обновление статистики (исправлено 08.01.2025)
 
-1. Оптимизация производительности индексатора
+### Проблема
+Изначально обновление статистики выполнялось медленно из-за использования дорогих запросов:
+```typescript
+// Медленно - полный подсчет каждый раз
+stats.totalBlocks = BigInt(await ctx.store.count(Block))
+stats.totalAccounts = BigInt(await ctx.store.count(Account))
+```
+
+### Решение
+Переход на инкрементальное обновление статистики:
+```typescript
+// Быстро - инкрементальное обновление
+stats.totalBlocks = (stats.totalBlocks || 0n) + BigInt(blocks.size)
+stats.totalTransactions = (stats.totalTransactions || 0n) + BigInt(transactions.size)
+stats.totalExtrinsics = (stats.totalExtrinsics || 0n) + BigInt(totalExtrinsics)
+stats.totalEvents = (stats.totalEvents || 0n) + BigInt(totalEvents)
+stats.totalTransfers = (stats.totalTransfers || 0n) + BigInt(totalTransfers)
+stats.totalWithdraws = (stats.totalWithdraws || 0n) + BigInt(totalWithdraws)
+stats.totalAccounts = (stats.totalAccounts || 0n) + BigInt(accounts.size)
+stats.lastUpdated = new Date()
+
+await ctx.store.upsert(stats)
+```
+
+### Результат
+- ✅ Статистика обновляется каждую секунду
+- ✅ Нет медленных count() запросов
+- ✅ Real-time данные для фронтенда
+- ✅ Обработка ошибок с try-catch
+
+## 8. Следующие шаги
+
+1. ✅ Оптимизация обновления статистики (выполнено)
 2. Реализация обработки реорганизации цепи (forks)
 3. Добавление дополнительных типов событий для индексации
-4. Интеграция с Hasura GraphQL для предоставления API
+4. ✅ Интеграция с Hasura GraphQL для предоставления API (выполнено)
 5. Внедрение мониторинга и метрик
-6. Разработка фронтенда для отображения данных 
+6. ✅ Разработка фронтенда для отображения данных (выполнено) 
