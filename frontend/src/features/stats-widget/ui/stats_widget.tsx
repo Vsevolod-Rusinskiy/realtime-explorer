@@ -52,6 +52,19 @@ export function StatsWidget() {
     const blocksDiff = parseInt(current.total_blocks) - parseInt(previous.total_blocks)
     const txDiff = parseInt(current.total_transactions) - parseInt(previous.total_transactions)
     
+    // 🐛 Добавляем логирование для отладки
+    console.log('📊 Отладка расчета скорости:', {
+      current_blocks: current.total_blocks,
+      previous_blocks: previous.total_blocks,
+      blocksDiff,
+      current_tx: current.total_transactions,
+      previous_tx: previous.total_transactions,
+      txDiff,
+      timeDiff,
+      currentBPS: currentStats.blocksPerSecond,
+      currentTPS: currentStats.transactionsPerSecond
+    })
+
     let blocksPerSecond = currentStats.blocksPerSecond
     let transactionsPerSecond = currentStats.transactionsPerSecond
     
@@ -59,9 +72,11 @@ export function StatsWidget() {
     if (timeDiff >= 0.5) { // минимум 0.5 секунды
       if (blocksDiff > 0) {
         blocksPerSecond = Math.round((blocksDiff / timeDiff) * 100) / 100
+        console.log('🟢 Обновили блоки/сек:', blocksPerSecond)
       }
       if (txDiff > 0) {
         transactionsPerSecond = Math.round((txDiff / timeDiff) * 100) / 100
+        console.log('🟢 Обновили транзакции/сек:', transactionsPerSecond)
       }
       
       // Обновляем время только если пересчитывали скорость
