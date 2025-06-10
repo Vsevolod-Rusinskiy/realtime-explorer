@@ -102,15 +102,15 @@ export function StatsWidget() {
       <StatCard 
         title="БЛОКОВ В СЕКУНДУ" 
         value={blocksPerSecond} 
-        subtitle="real-time скорость сети" 
-        highlightText="real-time"
+        subtitle="скорость сети" 
+        highlightText="скорость"
         isChanged={isBlocksChanged}
       />
       
       <StatCard 
         title="ТРАНЗАКЦИЙ В СЕКУНДУ" 
         value={transactionsPerSecond} 
-        subtitle="реальный TPS" 
+        subtitle="TPS сети" 
         highlightText="TPS"
         isChanged={isTransactionsChanged}
       />

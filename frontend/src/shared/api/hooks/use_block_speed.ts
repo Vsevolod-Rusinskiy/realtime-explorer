@@ -15,35 +15,45 @@ export function useBlockSpeed() {
   const [blocksPerSecond, setBlocksPerSecond] = useState(0)
   const [isChanged, setIsChanged] = useState(false)
   
-  const previousBlockTime = useRef<number | null>(null)
+  const previousBlockId = useRef<string | null>(null)
   const speedHistory = useRef<number[]>([]) // Храним историю скоростей для сглаживания
   const lastAnimationTime = useRef<number>(0)
 
   useEffect(() => {
-    if (!blocksData?.block || blocksData.block.length === 0) return
+    if (!blocksData?.block || blocksData.block.length < 2) return
 
     const blocks: BlockData[] = blocksData.block
     const latestBlock = blocks[0]
-    const currentBlockTime = new Date(latestBlock.timestamp).getTime()
-
-    // Если это первый блок, просто сохраняем время
-    if (previousBlockTime.current === null) {
-      previousBlockTime.current = currentBlockTime
+    
+    // Проверяем, что это действительно новый блок
+    if (previousBlockId.current === latestBlock.id) return
+    
+    // Ищем предыдущий блок (по номеру)
+    const currentBlockNumber = parseInt(latestBlock.number)
+    const previousBlock = blocks.find(block => 
+      parseInt(block.number) === currentBlockNumber - 1
+    )
+    
+    if (!previousBlock) {
+      // Если нет предыдущего блока, сохраняем текущий как предыдущий
+      previousBlockId.current = latestBlock.id
       return
     }
 
-    // Вычисляем время между блоками
-    const timeDiff = (currentBlockTime - previousBlockTime.current) / 1000 // в секундах
+    // Вычисляем РЕАЛЬНОЕ время между блоками на основе их timestamp'ов
+    const currentBlockTime = new Date(latestBlock.timestamp).getTime()
+    const previousBlockTime = new Date(previousBlock.timestamp).getTime()
+    const realTimeDiff = (currentBlockTime - previousBlockTime) / 1000 // в секундах
 
-    if (timeDiff > 0) {
-      // Скорость = 1 блок / время между блоками
-      const speed = 1 / timeDiff
+    if (realTimeDiff > 0) {
+      // Реальная скорость сети = 1 блок / реальное время между блоками
+      const realNetworkSpeed = 1 / realTimeDiff
       
       // Добавляем в историю для сглаживания
-      speedHistory.current.push(speed)
+      speedHistory.current.push(realNetworkSpeed)
       
-      // Оставляем только последние 5 значений
-      if (speedHistory.current.length > 5) {
+      // Оставляем только последние 3 значения для быстрой реакции
+      if (speedHistory.current.length > 3) {
         speedHistory.current.shift()
       }
       
@@ -67,16 +77,19 @@ export function useBlockSpeed() {
         }
       }
       
-      console.log('🔄 Расчет скорости блоков:', {
-        timeDiff: timeDiff.toFixed(2),
-        speed: speed.toFixed(2),
+      console.log('🌐 Реальная скорость сети Quantum Fusion:', {
+        currentBlock: currentBlockNumber,
+        previousBlock: parseInt(previousBlock.number),
+        realTimeDiff: realTimeDiff.toFixed(2) + 's',
+        networkSpeed: realNetworkSpeed.toFixed(2),
         averageSpeed: roundedSpeed,
-        blockNumber: latestBlock.number
+        currentTimestamp: latestBlock.timestamp,
+        previousTimestamp: previousBlock.timestamp
       })
     }
 
-    // Сохраняем время текущего блока
-    previousBlockTime.current = currentBlockTime
+    // Сохраняем ID текущего блока
+    previousBlockId.current = latestBlock.id
 
   }, [blocksData, blocksPerSecond])
 
