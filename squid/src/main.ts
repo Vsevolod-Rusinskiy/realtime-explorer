@@ -249,6 +249,7 @@ async function main() {
     
     // Обновляем статистику инкрементально (быстрее чем count())
     try {
+      const oldTotalBlocks = stats.totalBlocks
       stats.totalBlocks = (stats.totalBlocks || 0n) + BigInt(blocks.size)
       stats.totalTransactions = (stats.totalTransactions || 0n) + BigInt(transactions.size)
       stats.totalExtrinsics = (stats.totalExtrinsics || 0n) + BigInt(totalExtrinsics)
@@ -259,6 +260,11 @@ async function main() {
       stats.lastUpdated = new Date()
       
       await ctx.store.upsert(stats)
+      
+      // 🔍 Отладочное логирование для каждого обновления
+      if (blocks.size > 0) {
+        console.log(`📊 Добавлено блоков: ${blocks.size}, totalBlocks: ${oldTotalBlocks} -> ${stats.totalBlocks}`)
+      }
       
       // Логируем обновление статистики раз в 10 итераций для отладки
       if (totalBlocksProcessed % 50 === 0) {

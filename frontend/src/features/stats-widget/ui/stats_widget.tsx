@@ -2,136 +2,92 @@
 
 import { useSubscription } from '@apollo/client'
 import { useEffect, useState, useRef } from 'react'
-import { STATISTICS_SUBSCRIPTION } from '@/shared/api'
+import { STATISTICS_SUBSCRIPTION, useBlockSpeed } from '@/shared/api'
 import { StatCard } from '@/entities/stats'
-import { DatabaseStats, CalculatedStats } from '@/entities/stats/model/types'
+import { DatabaseStats } from '@/entities/stats/model/types'
 import styles from './styles.module.css'
 
 export function StatsWidget() {
-  // Подписка на реальную статистику из БД
+  // Подписка на реальную статистику из БД (для транзакций)
   const { data: statsData, loading, error } = useSubscription(STATISTICS_SUBSCRIPTION)
   
-  // State для хранения вычисленной статистики
-  const [stats, setStats] = useState<CalculatedStats>({
-    blocksPerSecond: 0,
-    transactionsPerSecond: 0,
-    totalBlocks: 0,
-    totalTransactions: 0,
-    totalAccounts: 0,
-    lastUpdated: new Date()
-  })
+  // Новый хук для расчета скорости блоков
+  const { blocksPerSecond, isChanged: isBlocksChanged, loading: blocksLoading } = useBlockSpeed()
   
-  // Для отслеживания изменений и анимации
-  const [changedFields, setChangedFields] = useState<string[]>([])
+  // State для хранения вычисленной статистики транзакций
+  const [transactionsPerSecond, setTransactionsPerSecond] = useState(0)
+  const [isTransactionsChanged, setIsTransactionsChanged] = useState(false)
   
-  // Сохраняем предыдущие значения для расчета скорости
+  // Сохраняем предыдущие значения для расчета скорости транзакций
   const previousStats = useRef<DatabaseStats | null>(null)
   const previousTime = useRef<number>(Date.now())
   
-  // Для контроля частоты анимации
+  // Для контроля частоты анимации транзакций
   const lastAnimationTime = useRef<number>(0)
 
-  // Функция для расчета реальной скорости
-  const calculateSpeed = (current: DatabaseStats, previous: DatabaseStats | null, currentStats: CalculatedStats): CalculatedStats => {
+  // Функция для расчета скорости транзакций (старая логика)
+  const calculateTransactionSpeed = (current: DatabaseStats, previous: DatabaseStats | null): number => {
     const now = Date.now()
     const timeDiff = (now - previousTime.current) / 1000 // в секундах
     
-    if (!previous) {
-      // Если нет предыдущих данных - просто обновляем общие данные, скорость оставляем текущую
-      return {
-        blocksPerSecond: currentStats.blocksPerSecond,
-        transactionsPerSecond: currentStats.transactionsPerSecond,
-        totalBlocks: parseInt(current.total_blocks) || 0,
-        totalTransactions: parseInt(current.total_transactions) || 0,
-        totalAccounts: parseInt(current.total_accounts) || 0,
-        lastUpdated: new Date(current.last_updated)
-      }
+    if (!previous || timeDiff < 0.5) {
+      return transactionsPerSecond // Возвращаем текущее значение
     }
 
-    // Реальные расчеты на основе изменений в БД
-    const blocksDiff = parseInt(current.total_blocks) - parseInt(previous.total_blocks)
     const txDiff = parseInt(current.total_transactions) - parseInt(previous.total_transactions)
     
-    // 🐛 Добавляем логирование для отладки
-    // console.log('📊 Отладка расчета скорости:', {
-    //   current_blocks: current.total_blocks,
-    //   previous_blocks: previous.total_blocks,
-    //   blocksDiff,
-    //   current_tx: current.total_transactions,
-    //   previous_tx: previous.total_transactions,
-    //   txDiff,
-    //   timeDiff,
-    //   currentBPS: currentStats.blocksPerSecond,
-    //   currentTPS: currentStats.transactionsPerSecond
-    // })
+    console.log('📊 Отладка расчета скорости транзакций:', {
+      current_tx: current.total_transactions,
+      previous_tx: previous.total_transactions,
+      txDiff,
+      timeDiff,
+      currentTPS: transactionsPerSecond
+    })
 
-    let blocksPerSecond = currentStats.blocksPerSecond
-    let transactionsPerSecond = currentStats.transactionsPerSecond
-    
-    // Обновляем скорость только если прошло достаточно времени и есть изменения
-    if (timeDiff >= 0.5) { // минимум 0.5 секунды
-      if (blocksDiff > 0) {
-        blocksPerSecond = Math.round((blocksDiff / timeDiff) * 100) / 100
-        console.log('🟢 Обновили блоки/сек:', blocksPerSecond)
-      }
-      if (txDiff > 0) {
-        transactionsPerSecond = Math.round((txDiff / timeDiff) * 100) / 100
-        console.log('🟢 Обновили транзакции/сек:', transactionsPerSecond)
-      }
+    if (txDiff > 0) {
+      const newTPS = Math.round((txDiff / timeDiff) * 100) / 100
+      console.log('🟢 Обновили транзакции/сек:', newTPS)
       
-      // Обновляем время только если пересчитывали скорость
+      // Обновляем время
       previousTime.current = now
+      
+      return Math.max(0, newTPS)
     }
 
-    return {
-      blocksPerSecond: Math.max(0, blocksPerSecond),
-      transactionsPerSecond: Math.max(0, transactionsPerSecond),
-      totalBlocks: parseInt(current.total_blocks) || 0,
-      totalTransactions: parseInt(current.total_transactions) || 0,
-      totalAccounts: parseInt(current.total_accounts) || 0,
-      lastUpdated: new Date(current.last_updated)
-    }
+    return transactionsPerSecond // Возвращаем текущее значение если нет изменений
   }
 
-  // Обработка данных подписки
+  // Обработка данных подписки для транзакций
   useEffect(() => {
     if (!statsData?.statistics || statsData.statistics.length === 0) return
     
     const currentDbStats: DatabaseStats = statsData.statistics[0]
     
-    // Вычисляем новую статистику
-    const newStats = calculateSpeed(currentDbStats, previousStats.current, stats)
+    // Вычисляем новую скорость транзакций
+    const newTPS = calculateTransactionSpeed(currentDbStats, previousStats.current)
     
-    // Проверяем какие поля изменились для анимации
-    const changedFieldsList: string[] = []
-    if (newStats.blocksPerSecond !== stats.blocksPerSecond) {
-      changedFieldsList.push('blocksPerSecond')
-    }
-    if (newStats.transactionsPerSecond !== stats.transactionsPerSecond) {
-      changedFieldsList.push('transactionsPerSecond')
-    }
-    
-    // Обновляем состояние
-    setStats(newStats)
-    
-    // Анимация только раз в 4 секунды
-    const now = Date.now()
-    if (changedFieldsList.length > 0 && (now - lastAnimationTime.current) >= 4000) {
-      setChangedFields(changedFieldsList)
-      lastAnimationTime.current = now
+    // Проверяем изменения для анимации
+    if (newTPS !== transactionsPerSecond) {
+      setTransactionsPerSecond(newTPS)
       
-      // Убираем анимацию через 4 секунды
-      setTimeout(() => {
-        setChangedFields([])
-      }, 4000)
+      // Анимация только раз в 4 секунды
+      const now = Date.now()
+      if ((now - lastAnimationTime.current) >= 4000) {
+        setIsTransactionsChanged(true)
+        lastAnimationTime.current = now
+        
+        setTimeout(() => {
+          setIsTransactionsChanged(false)
+        }, 4000)
+      }
     }
     
     // Сохраняем текущие данные как предыдущие
     previousStats.current = currentDbStats
     
-  }, [statsData])
+  }, [statsData, transactionsPerSecond])
   
-  if (loading && !statsData) {
+  if ((loading || blocksLoading) && !statsData) {
     return <div className={styles.stats_container}>Загрузка статистики...</div>
   }
   
@@ -145,18 +101,18 @@ export function StatsWidget() {
     <div className={styles.stats_container}>
       <StatCard 
         title="БЛОКОВ В СЕКУНДУ" 
-        value={stats.blocksPerSecond} 
+        value={blocksPerSecond} 
         subtitle="real-time скорость сети" 
         highlightText="real-time"
-        isChanged={changedFields.includes('blocksPerSecond')}
+        isChanged={isBlocksChanged}
       />
       
       <StatCard 
         title="ТРАНЗАКЦИЙ В СЕКУНДУ" 
-        value={stats.transactionsPerSecond} 
+        value={transactionsPerSecond} 
         subtitle="реальный TPS" 
         highlightText="TPS"
-        isChanged={changedFields.includes('transactionsPerSecond')}
+        isChanged={isTransactionsChanged}
       />
     </div>
   )

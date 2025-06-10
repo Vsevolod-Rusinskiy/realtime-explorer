@@ -1,6 +1,6 @@
 import { MAX_BLOCKS } from '../config'
 import { ProcessorContext } from '../processor'
-import { Block, Event, Transaction } from '../model'
+import { Block, Event, Transaction, Statistics } from '../model'
 import { In, LessThanOrEqual } from 'typeorm'
 
 export async function cleanupOldBlocks(ctx: ProcessorContext<any>) {
@@ -36,8 +36,21 @@ export async function cleanupOldBlocks(ctx: ProcessorContext<any>) {
         
         await ctx.store.remove(oldestBlocks)
         
-        // Логируем только если есть ошибки или для отладки
-        // console.log(`🧹 Удалено ${blocksToDeleteCount} старых блоков`)
+        // После удаления блоков обновляем статистику
+        const stats = await ctx.store.findOne(Statistics, { where: { id: '1' } })
+        if (stats) {
+          const oldTotalBlocks = stats.totalBlocks
+          stats.totalBlocks = stats.totalBlocks - BigInt(blocksToDeleteCount)
+          stats.totalTransactions = stats.totalTransactions - BigInt(transactions.length)
+          stats.totalEvents = stats.totalEvents - BigInt(events.length)
+          await ctx.store.save(stats)
+          
+          // 🔍 Отладочное логирование
+          console.log(`🧹 Очистка: удалено ${blocksToDeleteCount} блоков`)
+          console.log(`   📊 Статистика блоков: ${oldTotalBlocks} -> ${stats.totalBlocks}`)
+          console.log(`   📊 Удалено транзакций: ${transactions.length}`)
+          console.log(`   📊 Удалено событий: ${events.length}`)
+        }
       }
     }
   } catch (error) {

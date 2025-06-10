@@ -21,4 +21,15 @@ export const STATISTICS_SUBSCRIPTION = gql`
       last_updated
     }
   }
+`
+
+// Новая подписка для отслеживания последних блоков
+export const LATEST_BLOCKS_SUBSCRIPTION = gql`
+  subscription LatestBlocks {
+    block(order_by: {timestamp: desc}, limit: 5) {
+      id
+      number
+      timestamp
+    }
+  }
 ` 
