@@ -2,33 +2,32 @@
 
 set -e
 
-echo "Start deploy realtime-explorer..."
+echo "Starting deploy realtime-explorer..."
 
-# 1. NVM и Node.js
+# 1. NVM and Node.js
 source ~/.nvm/nvm.sh
 nvm use 20.9.0
 
-# 2. Переход в проект
+# 2. Navigate to project
 cd /var/www/realtime-explorer/
 echo "PWD: $(pwd)"
 ls -l .env docker-compose.yml
 
-# 3. Обновление кода.
+# 3. Update code
 git pull origin main
 
-# 4. Docker Compose: билд и запуск
-# (убедись, что docker-compose.yml настроен на порты 3003 и 5433)
+# 4. Docker Compose: build and run
 set -a
 source .env
 set +a
 docker-compose pull
 docker-compose build
 
-# 5. Запуск всех сервисов (squid запустится автоматически внутри контейнера)
+# 5. Start all services (squid will start automatically inside container)
 docker-compose up -d
 
-# 6. Проверка статуса
+# 6. Check status
 docker-compose ps
 docker-compose logs --tail=50 squid
 
-echo "Deploy complete." 
+echo "Deploy completed." 
