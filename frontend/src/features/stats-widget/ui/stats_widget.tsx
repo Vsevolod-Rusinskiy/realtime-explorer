@@ -88,32 +88,32 @@ export function StatsWidget() {
   }, [statsData, transactionsPerSecond])
   
   if ((loading || blocksLoading) && !statsData) {
-    return <div className={styles.stats_container}>Загрузка статистики...</div>
+    return <div className={styles.stats_container}>Statistics loading...</div>
   }
   
   if (error) {
     return <div className={styles.stats_container}>
-      Ошибка загрузки статистики: {error.message}
+      Error loading statistics: {error.message}
     </div>
   }
   
   return (
     <div className={styles.stats_container}>
       <StatCard 
-        title="БЛОКОВ В СЕКУНДУ" 
+        title="BLOCKS PER SECOND" 
         value={blocksPerSecond} 
-        subtitle="скорость сети" 
-        highlightText="скорость"
+        subtitle="network speed" 
+        highlightText="speed"
         isChanged={isBlocksChanged}
       />
       
-      <StatCard 
+      {/* <StatCard 
         title="ТРАНЗАКЦИЙ В СЕКУНДУ" 
         value={transactionsPerSecond} 
         subtitle="TPS сети" 
         highlightText="TPS"
         isChanged={isTransactionsChanged}
-      />
+      /> */}
     </div>
   )
 } 

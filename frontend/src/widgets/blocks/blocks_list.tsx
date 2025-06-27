@@ -6,7 +6,7 @@ import styles from './blocks_list.module.css'
 export function BlocksList() {
   return (
     <div className={styles.blocks_list_wrapper}>
-      <h1 className={styles.title}>Блоки</h1>
+      <h1 className={styles.title}>Blocks</h1>
       <BlocksListFeature />
     </div>
   )

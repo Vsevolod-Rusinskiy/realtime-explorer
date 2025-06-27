@@ -20,7 +20,7 @@ export function BlockCard({ block, isNew }: BlockCardProps) {
     <div className={styles.block_card + (isNew ? ' ' + styles.fade_in : '')}>
       {block.number && (
         <div className={styles.block_number}>
-          Блок #{block.number}
+          Block #{block.number}
         </div>
       )}
       <div className={styles.block_id}>

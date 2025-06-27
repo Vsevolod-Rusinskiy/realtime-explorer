@@ -44,8 +44,8 @@ export function BlocksList() {
     // eslint-disable-next-line
   }, [data])
 
-  if (loading) return <div>Загрузка блоков...</div>
-  if (error) return <div>Ошибка загрузки: {error.message}</div>
+  if (loading) return <div>Blocks loading...</div>
+  if (error) return <div>Error loading: {error.message}</div>
 
   return (
     <div className={styles.blocks_list_container}>

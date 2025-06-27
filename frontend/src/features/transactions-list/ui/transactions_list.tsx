@@ -42,8 +42,8 @@ export function TransactionsList() {
     // eslint-disable-next-line
   }, [data])
 
-  if (loading) return <div>Загрузка транзакций...</div>
-  if (error) return <div>Ошибка загрузки: {error.message}</div>
+  if (loading) return <div>Transactions loading...</div>
+  if (error) return <div>Error loading: {error.message}</div>
 
   return (
     <div className={styles.transactions_list_container}>
