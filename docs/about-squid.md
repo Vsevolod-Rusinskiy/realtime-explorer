@@ -1,28 +1,28 @@
-# Общая структура
+# General Structure
 
-В папке `squid` появились такие основные файлы и папки:
+The `squid` folder contains the following main files and folders:
 
-- `src/` — исходный код индексатора (обработка блоков, событий, extrinsics)
-- `schema.graphql` — описание структуры данных, которые будут храниться в базе (PostgreSQL)
-- `db/` — миграции для базы данных
-- `package.json` — зависимости и скрипты
-- `squid.yaml` — главный конфиг squid-проекта
-- `docker-compose.yml` — запуск инфраструктуры (Postgres, GraphQL сервер и т.д.)
-- `README.md` — подробная инструкция по работе с проектом
+- `src/` — indexer source code (processing blocks, events, extrinsics)
+- `schema.graphql` — description of the data structure to be stored in the database (PostgreSQL)
+- `db/` — database migrations
+- `package.json` — dependencies and scripts
+- `squid.yaml` — main config for the squid project
+- `docker-compose.yml` — infrastructure launch (Postgres, GraphQL server, etc.)
+- `README.md` — detailed project instructions
 
-# Как это работает (data flow)
+# How it works (data flow)
 
 ```
 +-------------------+
 |                   |
-|   Substrate сеть  |
+|   Substrate net   |
 |   (QF TestNet)    |
 +-------------------+
           |
           v
 +-------------------+
 |                   |
-|   Индексатор      |
+|   Indexer         |
 |   (src/,          |
 |   @subsquid/      |
 |   substrate-      |
@@ -54,45 +54,45 @@
 +-------------------+
 ```
 
-# Описание этапов
+# Description of stages
 
-1. **Индексатор (`src/`):**
-   - Использует пакет `@subsquid/substrate-processor` для подписки на блоки и события Substrate-сети (например, QF TestNet).
-   - В обработчиках (handlers) ты описываешь, какие события/экстринзики обрабатывать и как их сохранять в базу.
-   - Все данные пишутся в PostgreSQL через TypeORM.
+1. **Indexer (`src/`):**
+   - Uses the `@subsquid/substrate-processor` package to subscribe to blocks and events of the Substrate network (e.g., QF TestNet).
+   - In handlers, you describe which events/extrinsics to process and how to save them to the database.
+   - All data is written to PostgreSQL via TypeORM.
 
-2. **Схема данных (`schema.graphql`):**
-   - Описывает, какие сущности и поля будут в базе (например, Block, Transaction, Event, Account).
-   - На основе этой схемы автоматически генерируются TypeORM-модели и миграции.
+2. **Data schema (`schema.graphql`):**
+   - Describes which entities and fields will be in the database (e.g., Block, Transaction, Event, Account).
+   - Based on this schema, TypeORM models and migrations are automatically generated.
 
-3. **Миграции (`db/`):**
-   - После изменения схемы нужно сгенерировать миграции (`sqd migration:generate`) и применить их (`sqd migration:apply`).
-   - Это создаёт/обновляет таблицы в базе.
+3. **Migrations (`db/`):**
+   - After changing the schema, you need to generate migrations (`sqd migration:generate`) and apply them (`sqd migration:apply`).
+   - This creates/updates tables in the database.
 
-4. **GraphQL сервер:**
-   - После запуска индексатора автоматически поднимается GraphQL API (`@subsquid/graphql-server`), который позволяет делать запросы к данным в базе (например, получать последние блоки, транзакции и т.д.).
-   - Playground доступен по адресу http://localhost:4350/graphql
+4. **GraphQL server:**
+   - After starting the indexer, the GraphQL API (`@subsquid/graphql-server`) is automatically launched, allowing you to query the data in the database (e.g., get the latest blocks, transactions, etc.).
+   - Playground is available at http://localhost:4350/graphql
 
-5. **Инфраструктура (`docker-compose.yml`):**
-   - Можно поднять всю инфраструктуру одной командой (`sqd up`): Postgres, GraphQL сервер, сам индексатор.
+5. **Infrastructure (`docker-compose.yml`):**
+   - You can launch the entire infrastructure with one command (`sqd up`): Postgres, GraphQL server, the indexer itself.
 
-# Основные команды
+# Main commands
 
-- `npm install` — установка зависимостей
-- `sqd up` — запуск Postgres и сервисов
-- `sqd build` — сборка TypeScript-кода
-- `sqd run .` — запуск индексатора и GraphQL API
-- `sqd migration:generate` — генерация миграций после изменения схемы
-- `sqd migration:apply` — применение миграций
+- `npm install` — install dependencies
+- `sqd up` — start Postgres and services
+- `sqd build` — build TypeScript code
+- `sqd run .` — run the indexer and GraphQL API
+- `sqd migration:generate` — generate migrations after changing the schema
+- `sqd migration:apply` — apply migrations
 
-# Как происходит обработка данных
+# How data processing works
 
-- Индексатор подписывается на новые блоки и события в Substrate-сети.
-- Для каждого блока вызываются твои обработчики (handlers), которые парсят события, экстринзики и сохраняют нужные данные в базу.
-- GraphQL сервер автоматически отображает эти данные через API.
+- The indexer subscribes to new blocks and events in the Substrate network.
+- For each block, your handlers are called, which parse events, extrinsics, and save the necessary data to the database.
+- The GraphQL server automatically exposes this data via the API.
 
-# Как это связано с нашим планом
+# How this fits our plan
 
-Всё соответствует архитектуре из плана:
+Everything matches the architecture from the plan:
 
-QF TestNet → Squid SDK (индексатор) → PostgreSQL → Hasura/GraphQL → Frontend 
+QF TestNet → Squid SDK (indexer) → PostgreSQL → Hasura/GraphQL → Frontend 

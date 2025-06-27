@@ -1,75 +1,75 @@
-- ✅ Выполнено: 50%
-- 🚀 В процессе: 40%
-- ⏳ Не начато: 10%
+- ✅ Done: 50%
+- 🚀 In progress: 40%
+- ⏳ Not started: 10%
 
-# План деплоя realtime-explorer
-
----
-
-## Прогресс
-
-- По мере выполнения этапов отмечай их галочками (✅) и обновляй проценты в начале файла.
+# Realtime-explorer deployment plan
 
 ---
 
-## Этапы деплоя и тестирования
+## Progress
 
-### 1. Подготовка сервера
-  1.1. ✅ Открыть необходимые порты для приложения и БД (оставить стандартные порты)
-  1.2. ✅ Установить nvm, Node.js 20.9.0, Docker, docker-compose (если ещё не установлены)
-  1.3. ✅ Создать папку `/var/www/realtime-explorer/` на сервере
-  1.4. ⏳ Создать отдельного пользователя для деплоя (например, admin или deployer), добавить его в группы sudo и docker, настроить SSH-ключи
+- As you complete the steps, mark them with checkmarks (✅) and update the percentages at the top of the file.
 
-### 2. Клонирование и подготовка проекта
-  2.1. ✅ Клонировать репозиторий в `/var/www/realtime-explorer/`
-  2.2. ✅ Перейти в папку проекта
-  2.3. ✅ Установить зависимости для каждого сервиса (например, `cd squid && npm install`)
-  2.4. ✅ Проверить и настроить все необходимые .env переменные и секреты (БД, API-ключи, пароли)
-  2.5. Не хранить секреты и .env в git! Использовать .env и секреты CI/CD
-  2.6. ✅ После установки зависимостей обязательно выполнить:
+---
+
+## Deployment and testing stages
+
+### 1. Server preparation
+  1.1. ✅ Open the necessary ports for the application and DB (leave standard ports)
+  1.2. ✅ Install nvm, Node.js 20.9.0, Docker, docker-compose (if not already installed)
+  1.3. ✅ Create the folder `/var/www/realtime-explorer/` on the server
+  1.4. ⏳ Create a separate user for deployment (e.g., admin or deployer), add them to the sudo and docker groups, set up SSH keys
+
+### 2. Cloning and preparing the project
+  2.1. ✅ Clone the repository into `/var/www/realtime-explorer/`
+  2.2. ✅ Go to the project folder
+  2.3. ✅ Install dependencies for each service (e.g., `cd squid && npm install`)
+  2.4. ✅ Check and configure all necessary .env variables and secrets (DB, API keys, passwords)
+  2.5. Do not store secrets and .env in git! Use .env and CI/CD secrets
+  2.6. ✅ After installing dependencies, be sure to run:
     - `npx squid-typeorm-codegen`
     - `npm run build`
     - `npx squid-typeorm-migration apply`
-  2.7. ✅ Миграции успешно применяются вручную
+  2.7. ✅ Migrations are successfully applied manually
 
-### 3. Создание и настройка deploy.sh
-  3.1. ⏳ В корне проекта создать файл `deploy.sh` с логикой:
+### 3. Creating and configuring deploy.sh
+  3.1. ⏳ In the project root, create a `deploy.sh` file with logic:
     - source ~/.nvm/nvm.sh && nvm use 20.9.0
     - git pull origin main
     - docker-compose pull && docker-compose build
-    - запуск миграций через docker-compose (отдельная команда)
-    - запуск всех сервисов через docker-compose up -d
-    - build и codegen для squid теперь тоже автоматизированы в deploy.sh
-  3.2. ⏳ Сделать скрипт исполняемым: `chmod +x deploy.sh`
+    - run migrations via docker-compose (separate command)
+    - start all services via docker-compose up -d
+    - build and codegen for squid are now also automated in deploy.sh
+  3.2. ⏳ Make the script executable: `chmod +x deploy.sh`
 
-### 4. Создание тестовой миграции
-  4.1. ⏳ Внести тестовую миграцию (например, добавить/удалить поле в таблице account)
-  4.2. ⏳ Сгенерировать и применить миграцию локально, убедиться что она работает
-  4.3. ⏳ Запушить миграцию в репозиторий
+### 4. Creating a test migration
+  4.1. ⏳ Make a test migration (e.g., add/remove a field in the account table)
+  4.2. ⏳ Generate and apply the migration locally, make sure it works
+  4.3. ⏳ Push the migration to the repository
 
-### 5. Ручная проверка деплоя
-  5.1. ⏳ Подключиться к серверу по SSH (root)
-  5.2. ⏳ Перейти в `/var/www/realtime-explorer/`
-  5.3. ⏳ Запустить `./deploy.sh`
-  5.4. ⏳ Проверить, что миграции применились, сервисы стартовали, логи корректны
+### 5. Manual deployment check
+  5.1. ⏳ Connect to the server via SSH (root)
+  5.2. ⏳ Go to `/var/www/realtime-explorer/`
+  5.3. ⏳ Run `./deploy.sh`
+  5.4. ⏳ Check that migrations have been applied, services have started, logs are correct
 
-### 6. Проверка результата
-  6.1. ⏳ Проверить, что новое поле появилось в БД (psql, Hasura, pgAdmin)
-  6.2. ⏳ Проверить доступность сервисов на стандартных портах
+### 6. Result check
+  6.1. ⏳ Check that the new field appeared in the DB (psql, Hasura, pgAdmin)
+  6.2. ⏳ Check the availability of services on standard ports
 
-### 7. Настройка SSL
-  7.1. ⏳ Настроить SSL для приложения (например, через nginx + certbot)
-  7.2. ⏳ Проверить доступность приложения по https
+### 7. SSL setup
+  7.1. ⏳ Set up SSL for the application (e.g., via nginx + certbot)
+  7.2. ⏳ Check the availability of the application via https
 
-### 8. Интеграция в CI/CD
-  8.1. ⏳ После успешной ручной проверки — добавить вызов deploy.sh в workflow CI/CD
-  8.2. ⏳ Настроить секреты и переменные окружения для CI/CD
-  8.3. ⏳ Проверить автоматический деплой с применением миграций (например, удалить поле из таблицы и убедиться, что оно исчезло после деплоя)
+### 8. CI/CD integration
+  8.1. ⏳ After successful manual check — add deploy.sh call to the CI/CD workflow
+  8.2. ⏳ Set up secrets and environment variables for CI/CD
+  8.3. ⏳ Check automatic deployment with migration application (e.g., remove a field from the table and make sure it disappears after deployment)
 
 ---
 
-**Примечания:**
-- Скрипт deploy.sh можно запускать вручную на сервере для быстрой проверки, не гоняя CI/CD.
-- Перед запуском убедись, что все переменные окружения и docker-compose.yml настроены на стандартные порты.
-- Не забывай про .env и секреты — не храни их в git!
-- По мере выполнения этапов обновляй прогресс в начале файла. 
+**Notes:**
+- The deploy.sh script can be run manually on the server for quick checks, without running CI/CD.
+- Before starting, make sure all environment variables and docker-compose.yml are set to standard ports.
+- Don't forget about .env and secrets — don't store them in git!
+- As you complete the steps, update the progress at the top of the file. 
