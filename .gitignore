@@ -2,3 +2,4 @@
 archive/deploy.sh 
 **/.env 
 docker-compose.yml
+deploy.sh
