@@ -100,7 +100,7 @@ export function StatsWidget() {
   return (
     <div className={styles.stats_container}>
       <StatCard 
-        title="BLOCKS PER SECOND" 
+        title="BLOCKS PER SECOND!" 
         value={blocksPerSecond} 
         subtitle="network speed" 
         highlightText="speed"
