@@ -107,13 +107,13 @@ export function StatsWidget() {
         isChanged={isBlocksChanged}
       />
       
-      {/* <StatCard 
-        title="ТРАНЗАКЦИЙ В СЕКУНДУ" 
+      <StatCard 
+        title="TRANSACTIONS PER SECOND" 
         value={transactionsPerSecond} 
-        subtitle="TPS сети" 
+        subtitle="network TPS" 
         highlightText="TPS"
         isChanged={isTransactionsChanged}
-      /> */}
+      />
     </div>
   )
 } 
