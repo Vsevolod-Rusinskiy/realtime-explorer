@@ -77,20 +77,18 @@ export function useBlockSpeed() {
         }
       }
       
-      console.log('🌐 Реальная скорость сети Quantum Fusion:', {
-        currentBlock: latestBlock.id,
-        currentBlockNumber: currentBlockNumber,
-        previousBlock: previousBlock.id,
-        previousBlockNumber: parseInt(previousBlock.number),
-        realTimeDiff: realTimeDiff.toFixed(3) + 's',
-        networkSpeed: realNetworkSpeed.toFixed(3),
-        averageSpeed: roundedSpeed,
-        currentTimestamp: latestBlock.timestamp,
-        previousTimestamp: previousBlock.timestamp
-      })
-
-      // Выводим последние 5 блоков для анализа
-      console.log('Последние 5 блоков:', blocks.slice(0, 5).map(b => ({ id: b.id, number: b.number, timestamp: b.timestamp })))
+      // console.log('🌐 Реальная скорость сети Quantum Fusion:', {
+      //   currentBlock: latestBlock.id,
+      //   currentBlockNumber: currentBlockNumber,
+      //   previousBlock: previousBlock.id,
+      //   previousBlockNumber: parseInt(previousBlock.number),
+      //   realTimeDiff: realTimeDiff.toFixed(3) + 's',
+      //   networkSpeed: realNetworkSpeed.toFixed(3),
+      //   averageSpeed: roundedSpeed,
+      //   currentTimestamp: latestBlock.timestamp,
+      //   previousTimestamp: previousBlock.timestamp
+      // })
+      // console.log('Последние 5 блоков:', blocks.slice(0, 5).map(b => ({ id: b.id, number: b.number, timestamp: b.timestamp })))
     }
 
     // Сохраняем ID текущего блока

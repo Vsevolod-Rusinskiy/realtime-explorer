@@ -2,7 +2,6 @@
 
 import { useSubscription } from '@apollo/client'
 import { STATISTICS_SUBSCRIPTION, useBlockSpeed } from '@/shared/api'
-import { useTransactionSpeed } from '@/shared/api/hooks/use_transaction_speed'
 import { StatCard } from '@/entities/stats'
 import styles from './styles.module.css'
 
@@ -14,15 +13,15 @@ export function StatsWidget() {
   const { blocksPerSecond, isChanged: isBlocksChanged, loading: blocksLoading } = useBlockSpeed()
   
   // Новый хук для расчета TPS на лету
-  const { transactionsPerSecond, isChanged: isTransactionsChanged, loading: tpsLoading, error: tpsError } = useTransactionSpeed()
+  // const { transactionsPerSecond, isChanged: isTransactionsChanged, loading: tpsLoading, error: tpsError } = useTransactionSpeed()
   
-  if ((loading || blocksLoading || tpsLoading) && !statsData) {
+  if ((loading || blocksLoading) && !statsData) {
     return <div className={styles.stats_container}>Statistics loading...</div>
   }
   
-  if (error || tpsError) {
+  if (error) {
     return <div className={styles.stats_container}>
-      Error loading statistics: {error?.message || tpsError?.message}
+      Error loading statistics: {error?.message}
     </div>
   }
   
@@ -35,7 +34,7 @@ export function StatsWidget() {
         highlightText="speed"
         isChanged={isBlocksChanged}
       />
-      
+      {/*
       <StatCard 
         title="TRANSACTIONS PER SECOND" 
         value={transactionsPerSecond} 
@@ -43,6 +42,7 @@ export function StatsWidget() {
         highlightText="TPS"
         isChanged={isTransactionsChanged}
       />
+      */}
     </div>
   )
 } 
