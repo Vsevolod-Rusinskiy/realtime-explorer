@@ -46,8 +46,8 @@ export function useTransactionSpeed() {
           setTimeout(() => setIsChanged(false), 4000)
         }
       }
-      // Для отладки
-      console.log('⚡️ Реальная скорость транзакций:', {
+      // For debugging
+      console.log('⚡️ Real transaction speed:', {
         currentTx: latestTx.id,
         previousTx: previousTx.id,
         realTimeDiff: realTimeDiff.toFixed(3) + 's',
@@ -56,8 +56,8 @@ export function useTransactionSpeed() {
         currentTimestamp: latestTx.timestamp,
         previousTimestamp: previousTx.timestamp
       })
-      // Выводим последние 5 транзакций для анализа
-      console.log('Последние 5 транзакций:', transactions.slice(0, 5).map(t => ({ id: t.id, timestamp: t.timestamp })))
+      // Show last 5 transactions for analysis
+      console.log('Last 5 transactions:', transactions.slice(0, 5).map(t => ({ id: t.id, timestamp: t.timestamp })))
     }
     previousTopTxId.current = latestTx.id
   }, [data, transactionsPerSecond])

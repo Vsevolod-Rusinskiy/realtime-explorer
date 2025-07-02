@@ -95,7 +95,7 @@ async function main() {
             transactions.set(txId, tx)
             totalExtrinsics++
           } catch (e) {
-            console.error('Ошибка при обработке экзинтриксика:', e)
+            console.error('Error processing extrinsic:', e)
           }
         }
       }
@@ -145,7 +145,7 @@ async function main() {
             
             totalTransfers++
           } catch (e) {
-            console.error('Ошибка при обработке Balances.Transfer:', e)
+            console.error('Error processing Balances.Transfer:', e)
           }
         }
         else if (event.name.startsWith('Balances.') && event.name !== 'Balances.Transfer') {
@@ -166,7 +166,7 @@ async function main() {
               
               totalWithdraws++
             } catch (e) {
-              console.error('Ошибка при обработке Balances.Withdraw:', e)
+              console.error('Error processing Balances.Withdraw:', e)
             }
           }
           
@@ -216,14 +216,14 @@ async function main() {
       await ctx.store.upsert(stats)
       
       if (blocks.size > 0) {
-        console.log(`📊 Добавлено блоков: ${blocks.size}, totalBlocks: ${oldTotalBlocks} -> ${stats.totalBlocks}`)
+        console.log(`📊 Blocks added: ${blocks.size}, totalBlocks: ${oldTotalBlocks} -> ${stats.totalBlocks}`)
       }
       
       if (totalBlocksProcessed % 50 === 0) {
-        console.log(`📈 Статистика обновлена: блоков=${stats.totalBlocks}, транзакций=${stats.totalTransactions}`)
+        console.log(`📈 Stats updated: blocks=${stats.totalBlocks}, transactions=${stats.totalTransactions}`)
       }
     } catch (error) {
-      console.error('❌ Ошибка при обновлении статистики:', error)
+      console.error('❌ Error updating stats:', error)
     }
     
     const dbWriteTime = Date.now() - dbWriteStartTime
@@ -237,11 +237,11 @@ async function main() {
       const timeElapsed = (currentTime - lastLogTime) / 1000
       const avgSpeed = totalBlocksProcessed / timeElapsed
       
-      console.log(`📊 Статистика за ${timeElapsed.toFixed(0)} сек:`)
-      console.log(`   🔄 Блоков обработано: ${totalBlocksProcessed}`)
-      console.log(`   ⚡ Средняя скорость: ${avgSpeed.toFixed(2)} блоков/сек`)
-      console.log(`   ⏱️ Среднее время БД: ${(totalDbTime / totalBlocksProcessed).toFixed(1)}ms/блок`)
-      console.log(`   📈 Общее время обработки: ${(totalBatchTime / 1000).toFixed(1)}с`)
+      console.log(`📊 Stats for ${timeElapsed.toFixed(0)} sec:`)
+      console.log(`   🔄 Blocks processed: ${totalBlocksProcessed}`)
+      console.log(`   ⚡ Average speed: ${avgSpeed.toFixed(2)} blocks/sec`)
+      console.log(`   ⏱️ Avg DB time: ${(totalDbTime / totalBlocksProcessed).toFixed(1)}ms/block`)
+      console.log(`   📈 Total processing time: ${(totalBatchTime / 1000).toFixed(1)}s`)
       console.log(`---`)
       
       lastLogTime = currentTime
@@ -253,7 +253,7 @@ async function main() {
     try {
       await cleanupOldBlocks(ctx)
     } catch (error) {
-      console.error('Ошибка при очистке старых блоков:', error)
+      console.error('Error cleaning up old blocks:', error)
     }
   })
 }

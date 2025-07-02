@@ -12,7 +12,7 @@ import {
 import { RPC_URL, DEPTH } from './config'
 import { DB_CONFIG } from './db-config'
 
-console.log('🔧 Настройки БД:', `${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}`)
+console.log('🔧 DB config:', `${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}`)
 
 export async function createProcessor() {
   const provider = new WsProvider(RPC_URL)
@@ -22,7 +22,7 @@ export async function createProcessor() {
   await api.disconnect()
   const startBlock = Math.max(0, lastBlock - DEPTH)
 
-  console.log(`🚀 Squid индексатор запущен (блоки ${startBlock}+, логи раз в минуту)`)
+  console.log(`🚀 Squid indexer started (blocks ${startBlock}+, logs every minute)`)
 
   return new SubstrateBatchProcessor()
     .setRpcEndpoint({

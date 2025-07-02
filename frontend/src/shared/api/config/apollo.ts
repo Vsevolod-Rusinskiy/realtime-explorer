@@ -19,10 +19,10 @@ const wsLink = typeof window !== 'undefined'
       },
       on: {
         closed: (event) => {
-          console.error('[ApolloProvider] WebSocket закрыт:', event)
+          console.error('[ApolloProvider] WebSocket closed:', event)
         },
         error: (err) => {
-          console.error('[ApolloProvider] WebSocket ошибка:', err)
+          console.error('[ApolloProvider] WebSocket error:', err)
         }
       }
     }))

@@ -46,6 +46,6 @@ export async function cleanupOldBlocks(ctx: ProcessorContext<any>) {
       }
     }
   } catch (e) {
-    console.error('Ошибка при очистке старых блоков:', e)
+    console.error('Error cleaning up old blocks:', e)
   }
 } 
