@@ -36,24 +36,16 @@ export async function cleanupOldBlocks(ctx: ProcessorContext<any>) {
         
         await ctx.store.remove(oldestBlocks)
         
-        // После удаления блоков обновляем статистику
         const stats = await ctx.store.findOne(Statistics, { where: { id: '1' } })
         if (stats) {
-          const oldTotalBlocks = stats.totalBlocks
-          stats.totalBlocks = stats.totalBlocks - BigInt(blocksToDeleteCount)
-          stats.totalTransactions = stats.totalTransactions - BigInt(transactions.length)
-          stats.totalEvents = stats.totalEvents - BigInt(events.length)
-          await ctx.store.save(stats)
-          
-          // 🔍 Отладочное логирование
-          console.log(`🧹 Очистка: удалено ${blocksToDeleteCount} блоков`)
-          console.log(`   📊 Статистика блоков: ${oldTotalBlocks} -> ${stats.totalBlocks}`)
-          console.log(`   📊 Удалено транзакций: ${transactions.length}`)
-          console.log(`   📊 Удалено событий: ${events.length}`)
+          stats.totalBlocks = BigInt(await ctx.store.count(Block))
+          stats.totalTransactions = BigInt(await ctx.store.count(Transaction))
+          stats.totalEvents = BigInt(await ctx.store.count(Event))
+          await ctx.store.upsert(stats)
         }
       }
     }
-  } catch (error) {
-    console.error('Ошибка при очистке старых блоков:', error)
+  } catch (e) {
+    console.error('Ошибка при очистке старых блоков:', e)
   }
 } 

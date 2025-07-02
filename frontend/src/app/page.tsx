@@ -8,7 +8,6 @@ import './page.css'
 export default function Home() {
   return (
     <main className="my_main_container">
-      {/* Статистика наверху */}
       <StatsWidget />
       
       <div className="my_columns_wrapper">

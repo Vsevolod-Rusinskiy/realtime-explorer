@@ -12,7 +12,6 @@ import {
 import { RPC_URL, DEPTH } from './config'
 import { DB_CONFIG } from './db-config'
 
-// Выводим информацию о настройках подключения к БД (только при запуске)
 console.log('🔧 Настройки БД:', `${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}`)
 
 export async function createProcessor() {
@@ -28,12 +27,12 @@ export async function createProcessor() {
   return new SubstrateBatchProcessor()
     .setRpcEndpoint({
       url: RPC_URL,
-      rateLimit: 50, // Увеличиваем лимит для real-time
+      rateLimit: 50,
       requestTimeout: 30000
     })
     .setBlockRange({ 
       from: startBlock,
-      to: undefined // real-time без ограничений
+      to: undefined
     })
     .addEvent({
       name: [
