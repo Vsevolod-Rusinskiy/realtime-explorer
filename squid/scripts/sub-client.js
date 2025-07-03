@@ -1,9 +1,21 @@
 const WebSocket = require('ws')
 const { createClient } = require('graphql-ws');
 
-const port = process.env.GQL_PORT || 4350
-const host = process.env.GQL_HOST || 'localhost'
-const proto = process.env.GQL_PROTO || 'ws'
+// Environment variables are required for connection
+const port = process.env.GQL_PORT
+const host = process.env.GQL_HOST  
+const proto = process.env.GQL_PROTO
+
+// Validate required environment variables
+if (!port) {
+  throw new Error('GQL_PORT environment variable is required')
+}
+if (!host) {
+  throw new Error('GQL_HOST environment variable is required')
+}
+if (!proto) {
+  throw new Error('GQL_PROTO environment variable is required')
+}
 
 
 const client = createClient({
