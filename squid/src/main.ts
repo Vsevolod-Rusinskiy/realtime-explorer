@@ -215,13 +215,9 @@ async function main() {
       
       await ctx.store.upsert(stats)
       
-      if (blocks.size > 0) {
-        console.log(`📊 Blocks added: ${blocks.size}, totalBlocks: ${oldTotalBlocks} -> ${stats.totalBlocks}`)
-      }
+      // Block addition logging removed for production
       
-      if (totalBlocksProcessed % 50 === 0) {
-        console.log(`📈 Stats updated: blocks=${stats.totalBlocks}, transactions=${stats.totalTransactions}`)
-      }
+      // Stats logging reduced for production
     } catch (error) {
       console.error('❌ Error updating stats:', error)
     }
@@ -234,16 +230,8 @@ async function main() {
     
     const currentTime = Date.now()
     if (currentTime - lastLogTime >= 60000) {
-      const timeElapsed = (currentTime - lastLogTime) / 1000
-      const avgSpeed = totalBlocksProcessed / timeElapsed
-      
-      console.log(`📊 Stats for ${timeElapsed.toFixed(0)} sec:`)
-      console.log(`   🔄 Blocks processed: ${totalBlocksProcessed}`)
-      console.log(`   ⚡ Average speed: ${avgSpeed.toFixed(2)} blocks/sec`)
-      console.log(`   ⏱️ Avg DB time: ${(totalDbTime / totalBlocksProcessed).toFixed(1)}ms/block`)
-      console.log(`   📈 Total processing time: ${(totalBatchTime / 1000).toFixed(1)}s`)
-      console.log(`---`)
-      
+      // Detailed performance logging removed for production
+      // Only reset counters for internal tracking
       lastLogTime = currentTime
       totalBlocksProcessed = 0
       totalBatchTime = 0

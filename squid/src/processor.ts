@@ -20,7 +20,7 @@ export async function createProcessor() {
   await api.disconnect()
   const startBlock = Math.max(0, lastBlock - DEPTH)
 
-  console.log(`🚀 Squid indexer started (blocks ${startBlock}+, logs every minute)`)
+  console.log(`Squid indexer started from block ${startBlock}`)
 
   return new SubstrateBatchProcessor()
     .setRpcEndpoint({
