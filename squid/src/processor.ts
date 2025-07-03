@@ -12,8 +12,6 @@ import {
 import { RPC_URL, DEPTH } from './config'
 import { DB_CONFIG } from './db-config'
 
-console.log('🔧 DB config:', `${DB_CONFIG.host}:${DB_CONFIG.port}/${DB_CONFIG.database}`)
-
 export async function createProcessor() {
   const provider = new WsProvider(RPC_URL)
   const api = await ApiPromise.create({ provider })
