@@ -1,3 +1,3 @@
 // Public API
-export { TransactionCard } from './ui/transaction_card'
+export { TransactionCard } from './ui/transaction-card'
 export type { Transaction, TransactionsState } from './model/types' 
