@@ -22,12 +22,11 @@ export function useTransactionSpeed() {
     const latestTx = transactions[0]
     const previousTx = transactions[1]
 
-    // Проверяем, что это действительно новая транзакция
     if (previousTopTxId.current === latestTx.id) return
 
     const currentTxTime = new Date(latestTx.timestamp).getTime()
     const previousTxTime = new Date(previousTx.timestamp).getTime()
-    const realTimeDiff = (currentTxTime - previousTxTime) / 1000 // в секундах
+    const realTimeDiff = (currentTxTime - previousTxTime) / 1000
 
     if (realTimeDiff > 0) {
       const realTPS = 1 / realTimeDiff

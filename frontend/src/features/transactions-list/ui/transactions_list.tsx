@@ -22,20 +22,17 @@ export function TransactionsList() {
       return
     }
 
-    // Обновляем транзакции в реальном времени
     const currentTopTxId = visibleTxs[0]?.id
     const newTopTxId = data.transaction[0]?.id
     
     setVisibleTxs(data.transaction)
     
-    // Если изменилась верхняя транзакция И прошло 3 секунды - анимируем
     if (newTopTxId && newTopTxId !== currentTopTxId) {
       const now = Date.now()
-      if (now - lastAnimationTime.current >= 3000) { // 3 секунды
+      if (now - lastAnimationTime.current >= 3000) {
         setAnimateTopTx(true)
         lastAnimationTime.current = now
         
-        // Убираем анимацию через 1.5 секунды
         setTimeout(() => setAnimateTopTx(false), 1500)
       }
     }

@@ -13,31 +13,26 @@ export function BlocksList() {
   const firstRender = useRef(true)
   const lastAnimationTime = useRef(Date.now())
 
-  // Синхронизируем state с подпиской
   useEffect(() => {
     if (!data?.block) return
     
-    // Если первый рендер — просто показываем все 30
     if (firstRender.current) {
       setVisibleBlocks(data.block)
       firstRender.current = false
       return
     }
 
-    // Обновляем блоки в реальном времени
     const currentTopBlockId = visibleBlocks[0]?.id
     const newTopBlockId = data.block[0]?.id
     
     setVisibleBlocks(data.block)
     
-    // Если изменился верхний блок И прошло 3 секунды - анимируем
     if (newTopBlockId && newTopBlockId !== currentTopBlockId) {
       const now = Date.now()
-      if (now - lastAnimationTime.current >= 3000) { // 3 секунды
+      if (now - lastAnimationTime.current >= 3000) {
         setAnimateTopBlock(true)
         lastAnimationTime.current = now
         
-        // Убираем анимацию через 1.5 секунды
         setTimeout(() => setAnimateTopBlock(false), 1500)
       }
     }

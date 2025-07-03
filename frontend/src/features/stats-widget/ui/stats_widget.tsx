@@ -6,14 +6,9 @@ import { StatCard } from '@/entities/stats'
 import styles from './styles.module.css'
 
 export function StatsWidget() {
-  // Подписка на реальную статистику из БД (для транзакций)
   const { data: statsData, loading, error } = useSubscription(STATISTICS_SUBSCRIPTION)
   
-  // Новый хук для расчета скорости блоков
   const { blocksPerSecond, isChanged: isBlocksChanged, loading: blocksLoading } = useBlockSpeed()
-  
-  // Новый хук для расчета TPS на лету
-  // const { transactionsPerSecond, isChanged: isTransactionsChanged, loading: tpsLoading, error: tpsError } = useTransactionSpeed()
   
   if ((loading || blocksLoading) && !statsData) {
     return <div className={styles.stats_container}>Statistics loading...</div>

@@ -1,15 +1,12 @@
-// Public API
 export { ApolloProvider } from './apollo_provider'
 export * from './config/apollo'
 export * from './model/blocks'
 export * from './model/transactions'
 export * from './model/stats'
 
-// API Configuration
 export { apolloClient } from './config/apollo'
 export { ApolloProvider as CustomApolloProvider } from './apollo_provider'
 
-// GraphQL Queries & Subscriptions
 export { 
   RECENT_BLOCKS_SUBSCRIPTION, 
   STATISTICS_SUBSCRIPTION,
@@ -18,5 +15,4 @@ export {
 export { BLOCKS_SUBSCRIPTION } from './model/blocks'
 export { TRANSACTIONS_SUBSCRIPTION } from './model/transactions'
 
-// Hooks
 export { useBlockSpeed } from './hooks/use_block_speed' 

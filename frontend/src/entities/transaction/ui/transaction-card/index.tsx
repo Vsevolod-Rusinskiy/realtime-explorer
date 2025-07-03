@@ -9,7 +9,6 @@ interface TransactionCardProps {
 }
 
 export function TransactionCard({ transaction, isNew }: TransactionCardProps) {
-  // Функция для сокращенного отображения ID
   const shortId = (id: string) => {
     if (!id) return '—'
     if (id.length <= 40) return id

@@ -2,9 +2,7 @@ const http = require('http')
 const process = require('process')
 const fs = require('fs')
 
-// Проверяем наличие PID файла
 try {
-  // Файл состояния, который создается при успешном запуске процессора
   const stateExists = fs.existsSync('/app/.squid/processor_state.json')
   
   if (stateExists) {

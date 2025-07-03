@@ -9,7 +9,6 @@ interface BlockCardProps {
 }
 
 export function BlockCard({ block, isNew }: BlockCardProps) {
-  // Функция для сокращенного отображения ID и хеша
   const shortStr = (str: string) => {
     if (!str) return '—'
     if (str.length <= 40) return str
